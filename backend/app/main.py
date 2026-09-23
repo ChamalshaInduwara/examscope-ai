@@ -3,6 +3,7 @@ from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.routes.documents import router as documents_router
+from app.api.routes.topics import router as topics_router
 from app.core.config import settings
 from app.core.exceptions import (
     http_exception_handler,
@@ -29,6 +30,11 @@ app.add_exception_handler(
 
 app.include_router(
     documents_router,
+    prefix=settings.api_prefix,
+)
+
+app.include_router(
+    topics_router,
     prefix=settings.api_prefix,
 )
 
