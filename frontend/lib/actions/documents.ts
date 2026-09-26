@@ -2,7 +2,11 @@
 
 import { randomUUID } from "node:crypto";
 
-import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  PutObjectCommand,
+} from "@aws-sdk/client-s3";
 import { revalidatePath } from "next/cache";
 
 import { requireUser } from "@/lib/auth/session";
@@ -13,6 +17,12 @@ import {
   validateDocumentFile,
 } from "@/lib/validations/document";
 import { s3, S3_BUCKET_NAME } from "@/lib/storage/s3";
+import {
+  analyzeQuestionsWithFastApi,
+  discoverTopicsWithFastApi,
+  FastApiError,
+  processDocumentWithFastApi,
+} from "@/lib/api/fastapi";
 
 export type UploadDocumentState = {
   success?: boolean;
@@ -240,4 +250,275 @@ export async function deleteDocument(formData: FormData) {
   } catch (error) {
     console.error("Delete document failed:", error);
   }
+}
+
+function mapQuestionType(
+  type:
+    | "mcq"
+    | "structured"
+    | "essay"
+    | "calculation"
+    | "short_answer"
+    | "unknown"
+    | undefined,
+): "MCQ" | "STRUCTURED" | "ESSAY" {
+  switch (type) {
+    case "mcq":
+      return "MCQ";
+
+    case "essay":
+      return "ESSAY";
+
+    default:
+      return "STRUCTURED";
+  }
+}
+
+function normalizeQuestionText(value: string) {
+  return value.replace(/\s+/g, " ").trim().toLowerCase();
+}
+
+export async function processDocument(formData: FormData) {
+  const user = await requireUser();
+
+  const documentId = formData.get("documentId");
+
+  if (typeof documentId !== "string" || !documentId) {
+    return;
+  }
+
+  const document = await prisma.document.findFirst({
+    where: {
+      id: documentId,
+
+      subject: {
+        userId: user.id,
+        archived: false,
+      },
+    },
+    select: {
+      id: true,
+      fileName: true,
+      mimeType: true,
+      storageKey: true,
+      year: true,
+      subjectId: true,
+      processingStatus: true,
+    },
+  });
+
+  if (!document) {
+    return;
+  }
+
+  if (document.processingStatus === "PROCESSING") {
+    return;
+  }
+
+  await prisma.document.update({
+    where: {
+      id: document.id,
+    },
+
+    data: {
+      processingStatus: "PROCESSING",
+      processingError: null,
+    },
+  });
+
+  revalidatePath("/uploads");
+  revalidatePath(`/subjects/${document.subjectId}`);
+
+  try {
+    const storedObject = await s3.send(
+      new GetObjectCommand({
+        Bucket: S3_BUCKET_NAME,
+        Key: document.storageKey,
+      }),
+    );
+
+    if (!storedObject.Body) {
+      throw new Error("Stored document could not be read.");
+    }
+
+    const bytes = await storedObject.Body.transformToByteArray();
+
+    const blob = new Blob([new Uint8Array(bytes)], {
+      type: document.mimeType || "application/octet-stream",
+    });
+
+    // Stage 1:
+    // extraction + cleaning + chunking
+    const processingResult = await processDocumentWithFastApi({
+      file: blob,
+      fileName: document.fileName,
+    });
+
+    // Stage 2:
+    // structured question analysis
+    const questionResult = await analyzeQuestionsWithFastApi({
+      file: blob,
+      fileName: document.fileName,
+      year: document.year,
+    });
+
+    // Stage 3:
+    // topic discovery + question-topic mapping
+    const topicResult = await discoverTopicsWithFastApi({
+      file: blob,
+      fileName: document.fileName,
+      maxTopics: 10,
+    });
+
+    await prisma.$transaction(async (tx) => {
+      // Remove previous document-specific results.
+      // This makes reprocessing idempotent.
+      await tx.question.deleteMany({
+        where: {
+          documentId: document.id,
+        },
+      });
+
+      await tx.documentTopic.deleteMany({
+        where: {
+          documentId: document.id,
+        },
+      });
+
+      const topicIdMap = new Map<string, string>();
+
+      // Upsert subject-level topics.
+      for (const discoveredTopic of topicResult.topics) {
+        const topicName = discoveredTopic.name.trim();
+
+        if (!topicName) {
+          continue;
+        }
+
+        const topic = await tx.topic.upsert({
+          where: {
+            subjectId_name: {
+              subjectId: document.subjectId,
+              name: topicName,
+            },
+          },
+
+          update: {},
+
+          create: {
+            name: topicName,
+            subjectId: document.subjectId,
+          },
+
+          select: {
+            id: true,
+          },
+        });
+
+        topicIdMap.set(discoveredTopic.topic_id, topic.id);
+
+        await tx.documentTopic.create({
+          data: {
+            documentId: document.id,
+            topicId: topic.id,
+            confidence: discoveredTopic.score,
+          },
+        });
+      }
+
+      // Save structured questions.
+      for (const question of questionResult.questions) {
+        const normalizedQuestion = normalizeQuestionText(question.text);
+
+        const topicMapping = topicResult.question_mappings.find((mapping) => {
+          if (
+            question.question_number &&
+            mapping.question_number &&
+            question.question_number === mapping.question_number
+          ) {
+            return true;
+          }
+
+          return (
+            normalizeQuestionText(mapping.question_text) === normalizedQuestion
+          );
+        });
+
+        const topicId = topicMapping
+          ? (topicIdMap.get(topicMapping.topic_id) ?? null)
+          : null;
+
+        await tx.question.create({
+          data: {
+            text: question.text,
+
+            type: mapQuestionType(question.question_type),
+
+            marks: question.marks ?? null,
+
+            year: questionResult.year ?? document.year ?? null,
+
+            number: question.question_number ?? null,
+
+            subjectId: document.subjectId,
+
+            documentId: document.id,
+
+            topicId,
+          },
+        });
+      }
+
+      await tx.document.update({
+        where: {
+          id: document.id,
+        },
+
+        data: {
+          processingStatus: "COMPLETED",
+          processingError: null,
+        },
+      });
+    });
+
+    console.log("Document intelligence completed:", {
+      documentId: document.id,
+
+      segments: processingResult.cleaning.total_segments,
+
+      chunks: processingResult.chunking.total_chunks,
+
+      questionBlocks: processingResult.question_blocks.total_blocks,
+
+      questions: questionResult.total_questions,
+
+      topics: topicResult.total_topics,
+    });
+  } catch (error) {
+    console.error("Document intelligence failed:", error);
+
+    let message = "Document processing failed.";
+
+    if (error instanceof FastApiError) {
+      message = error.detail
+        ? `${error.message} ${error.detail}`
+        : error.message;
+    } else if (error instanceof Error) {
+      message = error.message;
+    }
+
+    await prisma.document.update({
+      where: {
+        id: document.id,
+      },
+
+      data: {
+        processingStatus: "FAILED",
+        processingError: message.slice(0, 1000),
+      },
+    });
+  }
+
+  revalidatePath("/uploads");
+  revalidatePath(`/subjects/${document.subjectId}`);
 }

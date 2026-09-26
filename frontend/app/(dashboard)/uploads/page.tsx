@@ -1,10 +1,4 @@
-import {
-  Download,
-  Eye,
-  FileText,
-  FileUp,
-  Trash2,
-} from "lucide-react";
+import { Download, Eye, FileText, FileUp, Play, Trash2 } from "lucide-react";
 
 import { requireUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/prisma";
@@ -22,7 +16,7 @@ import {
 
 import Link from "next/link";
 
-import { deleteDocument } from "@/lib/actions/documents";
+import { deleteDocument, processDocument } from "@/lib/actions/documents";
 import { Button } from "@/components/ui/button";
 
 type UploadsPageProps = {
@@ -57,13 +51,10 @@ function formatDocumentType(type: string) {
   return labels[type] ?? type;
 }
 
-export default async function UploadsPage({
-  searchParams,
-}: UploadsPageProps) {
+export default async function UploadsPage({ searchParams }: UploadsPageProps) {
   const user = await requireUser();
 
-  const { subject: requestedSubjectId } =
-    await searchParams;
+  const { subject: requestedSubjectId } = await searchParams;
 
   const subjects = await prisma.subject.findMany({
     where: {
@@ -83,8 +74,7 @@ export default async function UploadsPage({
   });
 
   const defaultSubjectId = subjects.some(
-    (subject) =>
-      subject.id === requestedSubjectId
+    (subject) => subject.id === requestedSubjectId,
   )
     ? requestedSubjectId
     : undefined;
@@ -121,13 +111,11 @@ export default async function UploadsPage({
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">
-          Upload Center
-        </h1>
+        <h1 className="text-3xl font-bold tracking-tight">Upload Center</h1>
 
         <p className="mt-2 text-muted-foreground">
-          Upload past papers, lecture notes and other study
-          materials for analysis.
+          Upload past papers, lecture notes and other study materials for
+          analysis.
         </p>
       </div>
 
@@ -139,8 +127,7 @@ export default async function UploadsPage({
           </CardTitle>
 
           <CardDescription>
-            Select a subject, add document details and
-            choose a supported file.
+            Select a subject, add document details and choose a supported file.
           </CardDescription>
         </CardHeader>
 
@@ -152,8 +139,7 @@ export default async function UploadsPage({
               </p>
 
               <p className="mt-1 text-sm text-muted-foreground">
-                Every uploaded document must belong to one
-                of your subjects.
+                Every uploaded document must belong to one of your subjects.
               </p>
             </div>
           ) : (
@@ -167,9 +153,7 @@ export default async function UploadsPage({
 
       <div className="space-y-4">
         <div>
-          <h2 className="text-xl font-semibold">
-            My Documents
-          </h2>
+          <h2 className="text-xl font-semibold">My Documents</h2>
 
           <p className="mt-1 text-sm text-muted-foreground">
             Track uploaded files and their processing status.
@@ -182,9 +166,7 @@ export default async function UploadsPage({
               <div className="text-center">
                 <FileText className="mx-auto size-10 text-muted-foreground" />
 
-                <p className="mt-4 font-medium">
-                  No documents uploaded
-                </p>
+                <p className="mt-4 font-medium">No documents uploaded</p>
 
                 <p className="mt-1 text-sm text-muted-foreground">
                   Upload your first study document above.
@@ -203,9 +185,7 @@ export default async function UploadsPage({
                     </div>
 
                     <div className="min-w-0">
-                      <p className="truncate font-medium">
-                        {document.title}
-                      </p>
+                      <p className="truncate font-medium">{document.title}</p>
 
                       <p className="mt-1 text-sm text-muted-foreground">
                         {document.subject.name}
@@ -213,13 +193,9 @@ export default async function UploadsPage({
                           ? ` (${document.subject.code})`
                           : ""}
                         {" • "}
-                        {formatDocumentType(
-                          document.documentType
-                        )}
+                        {formatDocumentType(document.documentType)}
 
-                        {document.year
-                          ? ` • ${document.year}`
-                          : ""}
+                        {document.year ? ` • ${document.year}` : ""}
                       </p>
 
                       <p className="mt-1 text-xs text-muted-foreground">
@@ -228,18 +204,14 @@ export default async function UploadsPage({
                         {formatFileSize(document.fileSize)}
                         {" • "}
                         Uploaded{" "}
-                        {document.createdAt.toLocaleDateString(
-                          "en-US",
-                          {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          }
-                        )}
+                        {document.createdAt.toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })}
                       </p>
 
-                      {document.processingStatus ===
-                        "FAILED" &&
+                      {document.processingStatus === "FAILED" &&
                       document.processingError ? (
                         <p className="mt-2 text-sm text-destructive">
                           {document.processingError}
@@ -249,57 +221,70 @@ export default async function UploadsPage({
                   </div>
 
                   <div className="flex shrink-0 flex-wrap items-center gap-2">
-  <DocumentStatusBadge
-    status={document.processingStatus}
-  />
+                    <DocumentStatusBadge status={document.processingStatus} />
 
-  <Button
-    variant="outline"
-    size="sm"
-    nativeButton={false}
-    render={
-      <Link
-        href={`/api/documents/${document.id}/file?mode=view`}
-        target="_blank"
-        rel="noopener noreferrer"
-      />
-    }
-  >
-    <Eye className="size-4" />
-    View
-  </Button>
+                    {document.processingStatus !== "PROCESSING" ? (
+                      <form action={processDocument}>
+                        <input
+                          type="hidden"
+                          name="documentId"
+                          value={document.id}
+                        />
 
-  <Button
-    variant="outline"
-    size="sm"
-    nativeButton={false}
-    render={
-      <Link
-        href={`/api/documents/${document.id}/file?mode=download`}
-      />
-    }
-  >
-    <Download className="size-4" />
-    Download
-  </Button>
+                        <Button type="submit" size="sm">
+                          <Play className="size-4" />
+                          {document.processingStatus === "FAILED"
+                            ? "Retry"
+                            : document.processingStatus === "COMPLETED"
+                              ? "Reprocess"
+                              : "Process"}
+                        </Button>
+                      </form>
+                    ) : null}
 
-  <form action={deleteDocument}>
-    <input
-      type="hidden"
-      name="documentId"
-      value={document.id}
-    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      nativeButton={false}
+                      render={
+                        <Link
+                          href={`/api/documents/${document.id}/file?mode=view`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        />
+                      }
+                    >
+                      <Eye className="size-4" />
+                      View
+                    </Button>
 
-    <Button
-      type="submit"
-      variant="destructive"
-      size="sm"
-    >
-      <Trash2 className="size-4" />
-      Delete
-    </Button>
-  </form>
-</div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      nativeButton={false}
+                      render={
+                        <Link
+                          href={`/api/documents/${document.id}/file?mode=download`}
+                        />
+                      }
+                    >
+                      <Download className="size-4" />
+                      Download
+                    </Button>
+
+                    <form action={deleteDocument}>
+                      <input
+                        type="hidden"
+                        name="documentId"
+                        value={document.id}
+                      />
+
+                      <Button type="submit" variant="destructive" size="sm">
+                        <Trash2 className="size-4" />
+                        Delete
+                      </Button>
+                    </form>
+                  </div>
                 </CardContent>
               </Card>
             ))}
