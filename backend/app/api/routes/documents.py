@@ -93,22 +93,6 @@ async def extract_uploaded_document(
 
 
 @router.post(
-    "/process",
-    response_model=DocumentProcessingResult,
-    summary="Extract, clean and chunk an academic document",
-    responses={
-        400: {
-            "model": ErrorResponse,
-            "description": "Invalid document or processing configuration",
-        },
-        415: {
-            "model": ErrorResponse,
-            "description": "Unsupported file type",
-        },
-    },
-)
-
-@router.post(
     "/questions/analyze",
     response_model=QuestionIntelligenceResult,
     summary="Analyze questions in a past paper",
@@ -187,6 +171,21 @@ async def analyze_uploaded_questions(
         if temporary_path is not None:
             temporary_path.unlink(missing_ok=True)
 
+@router.post(
+    "/process",
+    response_model=DocumentProcessingResult,
+    summary="Extract, clean and chunk an academic document",
+    responses={
+        400: {
+            "model": ErrorResponse,
+            "description": "Invalid document or processing configuration",
+        },
+        415: {
+            "model": ErrorResponse,
+            "description": "Unsupported file type",
+        },
+    },
+)
 async def process_uploaded_document(
     file: UploadFile = File(...),
     chunk_size_words: int = Query(
