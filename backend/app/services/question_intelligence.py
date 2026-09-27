@@ -1,16 +1,15 @@
 import re
 
-from app.schemas.processing import (
-    CleaningResult,
-    SourceReference,
-)
+from app.schemas.processing import CleaningResult
 from app.schemas.questions import (
     DifficultyLevel,
     QuestionIntelligenceResult,
     QuestionType,
     StructuredQuestion,
 )
-from app.services.question_block_detector import looks_like_question
+from app.services.question_block_detector import (
+    detect_candidate_question_blocks,
+)
 
 
 QUESTION_NUMBER_PATTERN = re.compile(
@@ -135,9 +134,17 @@ def classify_question_type(
     text: str,
     command_verb: str | None,
 ) -> QuestionType:
-    lowered = text.lower()
+    numeric_options = set(
+        re.findall(r"\([1-5]\)", text)
+    )
+    letter_options = set(
+        re.findall(r"\([A-E]\)", text)
+    )
 
-    if re.search(r"\b[a-d][\.\)]\s", lowered):
+    if (
+        len(numeric_options) >= 3
+        or len(letter_options) >= 3
+    ):
         return "mcq"
 
     if command_verb in {
@@ -227,60 +234,48 @@ def analyze_questions(
     year: int | None = None,
 ) -> QuestionIntelligenceResult:
     detected_year = year or detect_year(document.full_text)
-
     structured_questions: list[StructuredQuestion] = []
 
-    current_section: str | None = None
+    question_blocks = detect_candidate_question_blocks(document)
 
-    for segment in document.segments:
-        lines = [
-            line.strip()
-            for line in segment.text.splitlines()
-            if line.strip()
-        ]
+    for block in question_blocks.blocks:
+        text = block.text.strip()
 
-        for line in lines:
-            section = detect_section(line)
+        if not text:
+            continue
 
-            if section is not None:
-                current_section = section
-                continue
+        question_number = extract_question_number(text)
+        marks = extract_marks(text)
+        command_verb = detect_command_verb(text)
 
-            if not looks_like_question(line):
-                continue
+        question_type = classify_question_type(
+            text,
+            command_verb,
+        )
 
-            question_number = extract_question_number(line)
-            marks = extract_marks(line)
-            command_verb = detect_command_verb(line)
+        difficulty = estimate_difficulty(
+            text,
+            marks,
+            command_verb,
+        )
 
-            question_type = classify_question_type(
-                line,
-                command_verb,
+        question_text = clean_question_text(text)
+
+        if not question_text:
+            continue
+
+        structured_questions.append(
+            StructuredQuestion(
+                question_number=question_number,
+                text=question_text,
+                marks=marks,
+                section=None,
+                command_verb=command_verb,
+                question_type=question_type,
+                difficulty=difficulty,
+                source_reference=block.source_reference,
             )
-
-            difficulty = estimate_difficulty(
-                line,
-                marks,
-                command_verb,
-            )
-
-            question_text = clean_question_text(line)
-
-            structured_questions.append(
-                StructuredQuestion(
-                    question_number=question_number,
-                    text=question_text,
-                    marks=marks,
-                    section=current_section,
-                    command_verb=command_verb,
-                    question_type=question_type,
-                    difficulty=difficulty,
-                    source_reference=SourceReference(
-                        reference_type=segment.reference_type,
-                        reference_number=segment.reference_number,
-                    ),
-                )
-            )
+        )
 
     return QuestionIntelligenceResult(
         filename=document.filename,

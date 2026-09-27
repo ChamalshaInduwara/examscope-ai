@@ -1,3 +1,4 @@
+import re
 import pymupdf
 from docx import Document
 from pptx import Presentation
@@ -48,6 +49,54 @@ def extract_txt(file_path: Path) -> DocumentExtractionResult:
         segments=segments,
     )
 
+MIN_NATIVE_TEXT_CHARACTERS = 80
+MIN_NATIVE_TEXT_WORDS = 10
+OCR_DPI = 300
+
+
+def has_meaningful_pdf_text(text: str) -> bool:
+    stripped = text.strip()
+
+    if len(stripped) < MIN_NATIVE_TEXT_CHARACTERS:
+        return False
+
+    words = re.findall(
+        r"[A-Za-z0-9]+",
+        stripped,
+    )
+
+    return len(words) >= MIN_NATIVE_TEXT_WORDS
+
+
+def extract_page_text_with_ocr(
+    page,
+    page_number: int,
+) -> str:
+    native_text = page.get_text(
+        "text"
+    ).strip()
+
+    if has_meaningful_pdf_text(native_text):
+        return native_text
+
+    try:
+        text_page = page.get_textpage_ocr(
+            language="eng",
+            dpi=OCR_DPI,
+            full=True,
+            tessdata=pymupdf.get_tessdata(),
+        )
+
+        return page.get_text(
+            "text",
+            textpage=text_page,
+        ).strip()
+    except Exception as exc:
+        raise ValueError(
+            f"OCR failed on PDF page {page_number}"
+        ) from exc
+
+
 def extract_pdf(file_path: Path) -> DocumentExtractionResult:
     if not file_path.exists():
         raise FileNotFoundError(f"File not found: {file_path}")
@@ -64,8 +113,14 @@ def extract_pdf(file_path: Path) -> DocumentExtractionResult:
         if document.needs_pass:
             raise ValueError("Password-protected PDF files are not supported")
 
-        for page_number, page in enumerate(document, start=1):
-            text = page.get_text("text").strip()
+        for page_number, page in enumerate(
+            document,
+            start=1,
+        ):
+            text = extract_page_text_with_ocr(
+                page,
+                page_number,
+            )
 
             if not text:
                 continue
