@@ -88,6 +88,13 @@ export default async function AnalysisPage({
         processingStatus: true,
         createdAt: true,
 
+        _count: {
+          select: {
+            questions: true,
+            topics: true,
+          },
+        },
+
         subject: {
           select: {
             name: true,
@@ -148,8 +155,10 @@ export default async function AnalysisPage({
     }),
   ]);
 
-  const completedDocuments = documents.filter(
-    (document) => document.processingStatus === "COMPLETED",
+  const analyzedDocumentsCount = documents.filter(
+    (document) =>
+      document.processingStatus === "COMPLETED" &&
+      (document._count.questions > 0 || document._count.topics > 0),
   ).length;
 
   const mcqCount = questions.filter(
@@ -237,10 +246,10 @@ export default async function AnalysisPage({
           </CardHeader>
 
           <CardContent>
-            <div className="text-2xl font-bold">{documents.length}</div>
+            <div className="text-2xl font-bold">{analyzedDocumentsCount}</div>
 
             <p className="text-xs text-muted-foreground">
-              {completedDocuments} processed
+              {analyzedDocumentsCount} analyzed
             </p>
           </CardContent>
         </Card>

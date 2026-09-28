@@ -39,6 +39,23 @@ YEAR_PATTERN = re.compile(
     r"\b(?P<year>(?:19|20)\d{2})\b"
 )
 
+PAGE_FOOTER_PATTERN = re.compile(
+    r"\s*"
+    r"(?:[\(\[]?\s*0{2,}\d{3,}\s*)?"
+    r"\[?\s*see\s*page\b.*$",
+    re.IGNORECASE,
+)
+
+WATERMARK_PATTERN = re.compile(
+    r"\s*(?:downloaded\s+from\s*\|?\s*)?"
+    r"past\s+papers\s+wiki\b.*$",
+    re.IGNORECASE,
+)
+
+TRAILING_OCR_SEPARATOR_PATTERN = re.compile(
+    r"\s*(?:[|=]\s*)+$"
+)
+
 
 COMMAND_VERBS = (
     "define",
@@ -106,6 +123,9 @@ def detect_year(text: str) -> int | None:
 def clean_question_text(text: str) -> str:
     cleaned = QUESTION_NUMBER_PATTERN.sub("", text).strip()
     cleaned = MARKS_PATTERN.sub("", cleaned).strip()
+    cleaned = PAGE_FOOTER_PATTERN.sub("", cleaned).strip()
+    cleaned = WATERMARK_PATTERN.sub("", cleaned).strip()
+    cleaned = TRAILING_OCR_SEPARATOR_PATTERN.sub("", cleaned).strip()
 
     cleaned = re.sub(
         r"\s+",
