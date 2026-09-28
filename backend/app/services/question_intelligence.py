@@ -15,7 +15,7 @@ from app.services.question_block_detector import (
 QUESTION_NUMBER_PATTERN = re.compile(
     r"^\s*(?:question|q)?\s*"
     r"(?P<number>\d+(?:\([a-zA-Z]\))?)"
-    r"[\.\):\-]?\s*",
+    r"[\.\),:\-]?\s*",
     re.IGNORECASE,
 )
 
@@ -229,6 +229,15 @@ def estimate_difficulty(
     return "unknown"
 
 
+def is_meaningful_question_text(text: str) -> bool:
+    words = re.findall(
+        r"[A-Za-z]{2,}",
+        text,
+    )
+
+    return len(words) >= 3
+
+
 def analyze_questions(
     document: CleaningResult,
     year: int | None = None,
@@ -261,7 +270,12 @@ def analyze_questions(
 
         question_text = clean_question_text(text)
 
-        if not question_text:
+        if (
+            not question_text
+            or not is_meaningful_question_text(
+                question_text
+            )
+        ):
             continue
 
         structured_questions.append(

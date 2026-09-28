@@ -35,6 +35,22 @@ GENERIC_WORDS = {
     "justify",
     "derive",
     "solve",
+    "following",
+    "correct",
+    "select",
+    "statement",
+    "statements",
+    "regarding",
+    "write",
+    "ii",
+    "iii",
+    "iv",
+    "vi",
+    "vii",
+    "viii",
+    "ix",
+    "xi",
+    "xii",
     "remove",
     "removes",
     "require",
@@ -52,6 +68,8 @@ GENERIC_WORDS = {
     "used",
     "use",
 }
+
+MIN_TOPIC_RELEVANCE_SCORE = 0.08
 
 
 def normalize_topic_name(topic: str) -> str:
@@ -185,20 +203,33 @@ def discover_topics(
     source_texts: list[str] = []
     source_references: list[SourceReference] = []
 
-    for segment in document.segments:
-        text = segment.text.strip()
+    if questions is not None and questions.questions:
+        for question in questions.questions:
+            text = question.text.strip()
 
-        if not text:
-            continue
+            if not text:
+                continue
 
-        source_texts.append(text)
+            source_texts.append(text)
 
-        source_references.append(
-            SourceReference(
-                reference_type=segment.reference_type,
-                reference_number=segment.reference_number,
+            source_references.append(
+                question.source_reference
             )
-        )
+    else:
+        for segment in document.segments:
+            text = segment.text.strip()
+
+            if not text:
+                continue
+
+            source_texts.append(text)
+
+            source_references.append(
+                SourceReference(
+                    reference_type=segment.reference_type,
+                    reference_number=segment.reference_number,
+                )
+            )
 
     if not source_texts:
         return TopicDiscoveryResult(
@@ -321,6 +352,20 @@ def discover_topics(
         topics,
     )
 
+    if questions is not None and questions.questions:
+        mapped_topic_ids = {
+            mapping.topic_id
+            for mapping in question_mappings
+        }
+
+        topics = [
+            topic
+            for topic in topics
+            if topic.topic_id in mapped_topic_ids
+        ]
+
+        topics = assign_parent_topics(topics)
+
     return TopicDiscoveryResult(
         filename=document.filename,
         file_type=document.file_type,
@@ -380,7 +425,7 @@ def map_questions_to_topics(
         best_topic_index = int(scores.argmax())
         best_score = float(scores[best_topic_index])
 
-        if best_score <= 0:
+        if best_score < MIN_TOPIC_RELEVANCE_SCORE:
             continue
 
         best_topic = topics[best_topic_index]
