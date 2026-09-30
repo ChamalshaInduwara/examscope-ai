@@ -63,8 +63,11 @@ GENERIC_WORDS = {
     "related",
     "rows",
     "purpose",
+    "present",
     "reports",
     "report",
+    "humans",
+    "process",
     "used",
     "use",
 }
@@ -94,6 +97,15 @@ def is_good_topic(topic: str) -> bool:
     words = topic.split()
 
     if not words:
+        return False
+
+    # Reject OCR-noise tokens made from one repeated character.
+    # Examples: "ee ee", "ee eee", "ooo".
+    if any(
+        len(word) >= 2
+        and len(set(word)) == 1
+        for word in words
+    ):
         return False
 
     if any(word in GENERIC_WORDS for word in words):

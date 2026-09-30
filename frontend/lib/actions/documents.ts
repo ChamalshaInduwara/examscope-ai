@@ -451,20 +451,11 @@ export async function processDocument(formData: FormData) {
         for (const question of questionResult.questions) {
           const normalizedQuestion = normalizeQuestionText(question.text);
 
-          const topicMapping = topicResult.question_mappings.find((mapping) => {
-            if (
-              question.question_number &&
-              mapping.question_number &&
-              question.question_number === mapping.question_number
-            ) {
-              return true;
-            }
-
-            return (
+          const topicMapping = topicResult.question_mappings.find(
+            (mapping) =>
               normalizeQuestionText(mapping.question_text) ===
-              normalizedQuestion
-            );
-          });
+              normalizedQuestion,
+          );
 
           const topicId = topicMapping
             ? (topicIdMap.get(topicMapping.topic_id) ?? null)
