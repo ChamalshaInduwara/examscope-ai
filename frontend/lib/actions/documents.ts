@@ -370,116 +370,162 @@ export async function processDocument(formData: FormData) {
       maxTopics: 10,
     });
 
-    await prisma.$transaction(async (tx) => {
-      // Remove previous document-specific results.
-      // This makes reprocessing idempotent.
-      await tx.question.deleteMany({
-        where: {
-          documentId: document.id,
-        },
-      });
-
-      await tx.documentTopic.deleteMany({
-        where: {
-          documentId: document.id,
-        },
-      });
-
-      const topicIdMap = new Map<string, string>();
-
-      // Upsert subject-level topics.
-      for (const discoveredTopic of topicResult.topics) {
-        const topicName = discoveredTopic.name.trim();
-
-        if (!topicName) {
-          continue;
-        }
-
-        const topic = await tx.topic.upsert({
+    await prisma.$transaction(
+      async (tx) => {
+        const previousTopicLinks = await tx.documentTopic.findMany({
           where: {
-            subjectId_name: {
-              subjectId: document.subjectId,
-              name: topicName,
-            },
-          },
-
-          update: {},
-
-          create: {
-            name: topicName,
-            subjectId: document.subjectId,
+            documentId: document.id,
           },
 
           select: {
-            id: true,
+            topicId: true,
           },
         });
 
-        topicIdMap.set(discoveredTopic.topic_id, topic.id);
+        const previousTopicIds = previousTopicLinks.map((link) => link.topicId);
 
-        await tx.documentTopic.create({
-          data: {
+        // Existing predictions are based on the previous document intelligence.
+        // They must be regenerated after reprocessing.
+        await tx.prediction.deleteMany({
+          where: {
+            subjectId: document.subjectId,
+          },
+        });
+
+        // Remove previous document-specific results.
+        // This makes reprocessing idempotent.
+        await tx.question.deleteMany({
+          where: {
             documentId: document.id,
-            topicId: topic.id,
-            confidence: discoveredTopic.score,
           },
         });
-      }
 
-      // Save structured questions.
-      for (const question of questionResult.questions) {
-        const normalizedQuestion = normalizeQuestionText(question.text);
+        await tx.documentTopic.deleteMany({
+          where: {
+            documentId: document.id,
+          },
+        });
 
-        const topicMapping = topicResult.question_mappings.find((mapping) => {
-          if (
-            question.question_number &&
-            mapping.question_number &&
-            question.question_number === mapping.question_number
-          ) {
-            return true;
+        const topicIdMap = new Map<string, string>();
+
+        // Upsert subject-level topics.
+        for (const discoveredTopic of topicResult.topics) {
+          const topicName = discoveredTopic.name.trim();
+
+          if (!topicName) {
+            continue;
           }
 
-          return (
-            normalizeQuestionText(mapping.question_text) === normalizedQuestion
+          const topic = await tx.topic.upsert({
+            where: {
+              subjectId_name: {
+                subjectId: document.subjectId,
+                name: topicName,
+              },
+            },
+
+            update: {},
+
+            create: {
+              name: topicName,
+              subjectId: document.subjectId,
+            },
+
+            select: {
+              id: true,
+            },
+          });
+
+          topicIdMap.set(discoveredTopic.topic_id, topic.id);
+
+          await tx.documentTopic.create({
+            data: {
+              documentId: document.id,
+              topicId: topic.id,
+              confidence: discoveredTopic.score,
+            },
+          });
+        }
+
+        // Save structured questions.
+        for (const question of questionResult.questions) {
+          const normalizedQuestion = normalizeQuestionText(question.text);
+
+          const topicMapping = topicResult.question_mappings.find(
+            (mapping) =>
+              normalizeQuestionText(mapping.question_text) ===
+              normalizedQuestion,
           );
-        });
 
-        const topicId = topicMapping
-          ? (topicIdMap.get(topicMapping.topic_id) ?? null)
-          : null;
+          const topicId = topicMapping
+            ? (topicIdMap.get(topicMapping.topic_id) ?? null)
+            : null;
 
-        await tx.question.create({
+          await tx.question.create({
+            data: {
+              text: question.text,
+
+              type: mapQuestionType(question.question_type),
+
+              marks: question.marks ?? null,
+
+              year: questionResult.year ?? document.year ?? null,
+
+              number: question.question_number ?? null,
+
+              subjectId: document.subjectId,
+
+              documentId: document.id,
+
+              topicId,
+            },
+          });
+        }
+
+        if (previousTopicIds.length > 0) {
+          await tx.topic.deleteMany({
+            where: {
+              id: {
+                in: previousTopicIds,
+              },
+
+              subjectId: document.subjectId,
+
+              documents: {
+                none: {},
+              },
+
+              questions: {
+                none: {},
+              },
+
+              predictions: {
+                none: {},
+              },
+
+              generatedQuestions: {
+                none: {},
+              },
+            },
+          });
+        }
+
+        await tx.document.update({
+          where: {
+            id: document.id,
+          },
+
           data: {
-            text: question.text,
-
-            type: mapQuestionType(question.question_type),
-
-            marks: question.marks ?? null,
-
-            year: questionResult.year ?? document.year ?? null,
-
-            number: question.question_number ?? null,
-
-            subjectId: document.subjectId,
-
-            documentId: document.id,
-
-            topicId,
+            processingStatus: "COMPLETED",
+            processingError: null,
           },
         });
-      }
-
-      await tx.document.update({
-        where: {
-          id: document.id,
-        },
-
-        data: {
-          processingStatus: "COMPLETED",
-          processingError: null,
-        },
-      });
-    });
+      },
+      {
+        maxWait: 5000,
+        timeout: 20000,
+      },
+    );
 
     console.log("Document intelligence completed:", {
       documentId: document.id,

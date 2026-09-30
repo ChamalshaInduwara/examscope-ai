@@ -2,6 +2,8 @@ import type {
   DocumentProcessingResult,
   FastApiErrorResponse,
   FastApiHealthResponse,
+  PredictionGenerateRequest,
+  PredictionGenerateResult,
   QuestionIntelligenceResult,
   TopicDiscoveryResult,
 } from "@/types/api";
@@ -145,5 +147,17 @@ export function discoverTopicsWithFastApi({
       method: "POST",
       body: formData,
     },
+  );
+}
+
+export function generatePredictionsWithFastApi(
+  input: PredictionGenerateRequest
+) {
+  return fastApiRequest<PredictionGenerateResult>(
+    "/api/v1/predictions/generate",
+    {
+      method: "POST",
+      body: JSON.stringify(input),
+    }
   );
 }

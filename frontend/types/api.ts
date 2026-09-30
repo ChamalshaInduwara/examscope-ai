@@ -92,3 +92,47 @@ export type TopicDiscoveryResult = {
   topics: DiscoveredTopic[];
   question_mappings: QuestionTopicMapping[];
 };
+
+export type PredictionQuestionInput = {
+  id: string;
+  text: string;
+  year?: number | null;
+  question_type: string;
+  marks?: number | null;
+  topic_id?: string | null;
+  topic_name?: string | null;
+};
+
+export type PredictionTopicInput = {
+  id: string;
+  name: string;
+  question_count: number;
+  document_count: number;
+};
+
+export type PredictionGenerateRequest = {
+  questions: PredictionQuestionInput[];
+  topics: PredictionTopicInput[];
+  max_predictions: number;
+};
+
+export type PredictionResult = {
+  title: string;
+  explanation: string;
+
+  score: number;
+  rank: number;
+
+  recurrence_score: number;
+  similarity_score: number;
+  recency_score: number;
+  importance_score: number;
+
+  topic_id?: string | null;
+  topic_name?: string | null;
+};
+
+export type PredictionGenerateResult = {
+  total_predictions: number;
+  predictions: PredictionResult[];
+};

@@ -4,6 +4,8 @@ from app.schemas.common import ErrorResponse
 from app.schemas.predictions import (
     PredictionBacktestRequest,
     PredictionBacktestResult,
+    PredictionGenerateRequest,
+    PredictionGenerateResult,
     PredictionRequest,
     PredictionResult,
 )
@@ -17,6 +19,29 @@ router = APIRouter(
     prefix="/predictions",
     tags=["Predictions"],
 )
+
+
+@router.post(
+    "/generate",
+    response_model=PredictionGenerateResult,
+    summary="Generate exam topic predictions",
+    responses={
+        400: {
+            "model": ErrorResponse,
+            "description": "Invalid prediction input",
+        },
+    },
+)
+async def generate_exam_predictions(
+    request: PredictionGenerateRequest,
+):
+    try:
+        return generate_predictions(request)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=str(exc),
+        ) from exc
 
 
 @router.post(
@@ -55,7 +80,9 @@ def rank_predictions(request: PredictionRequest):
         },
     },
 )
-def backtest_topic_predictions(request: PredictionBacktestRequest):
+def backtest_topic_predictions(
+    request: PredictionBacktestRequest,
+):
     try:
         return backtest_predictions(
             request.analytics,

@@ -3,11 +3,72 @@ from pydantic import BaseModel, Field
 from app.schemas.analytics import HistoricalAnalyticsResult
 
 
+class PredictionQuestionInput(BaseModel):
+    id: str
+    text: str
+    year: int | None = None
+    question_type: str
+    marks: int | None = None
+    topic_id: str | None = None
+    topic_name: str | None = None
+
+
+class PredictionTopicInput(BaseModel):
+    id: str
+    name: str
+    question_count: int = 0
+    document_count: int = 0
+
+
+class PredictionGenerateRequest(BaseModel):
+    questions: list[PredictionQuestionInput]
+    topics: list[PredictionTopicInput]
+
+    max_predictions: int = Field(
+        default=10,
+        ge=1,
+        le=30,
+    )
+
+
+class PredictionGenerateItem(BaseModel):
+    title: str
+    explanation: str
+
+    score: float
+    rank: int
+
+    recurrence_score: float
+    similarity_score: float
+    recency_score: float
+    importance_score: float
+
+    topic_id: str | None = None
+    topic_name: str | None = None
+
+
+class PredictionGenerateResult(BaseModel):
+    total_predictions: int
+    predictions: list[PredictionGenerateItem]
+
+
 class PredictionWeights(BaseModel):
-    frequency: float = Field(default=0.30, ge=0)
-    recency: float = Field(default=0.25, ge=0)
-    recurrence: float = Field(default=0.25, ge=0)
-    marks_importance: float = Field(default=0.20, ge=0)
+    frequency: float = Field(
+        default=0.30,
+        ge=0,
+    )
+    recency: float = Field(
+        default=0.25,
+        ge=0,
+    )
+    recurrence: float = Field(
+        default=0.25,
+        ge=0,
+    )
+    marks_importance: float = Field(
+        default=0.20,
+        ge=0,
+    )
 
 
 class PredictionFactors(BaseModel):
@@ -56,12 +117,24 @@ class PredictionBacktestResult(BaseModel):
 
 class PredictionRequest(BaseModel):
     analytics: HistoricalAnalyticsResult
-    weights: PredictionWeights = Field(default_factory=PredictionWeights)
-    limit: int = Field(default=5, ge=1, le=20)
+    weights: PredictionWeights = Field(
+        default_factory=PredictionWeights
+    )
+    limit: int = Field(
+        default=5,
+        ge=1,
+        le=20,
+    )
 
 
 class PredictionBacktestRequest(BaseModel):
     analytics: HistoricalAnalyticsResult
     actual_topics: list[str]
-    weights: PredictionWeights = Field(default_factory=PredictionWeights)
-    top_k: int = Field(default=5, ge=1, le=20)
+    weights: PredictionWeights = Field(
+        default_factory=PredictionWeights
+    )
+    top_k: int = Field(
+        default=5,
+        ge=1,
+        le=20,
+    )
