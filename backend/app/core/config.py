@@ -1,3 +1,4 @@
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -7,6 +8,10 @@ class Settings(BaseSettings):
     environment: str = "development"
     debug: bool = True
     api_prefix: str = "/api/v1"
+
+    gemini_api_key: str | None = Field(default=None, repr=False)
+    gemini_model: str | None = None
+    generation_timeout_seconds: float = Field(default=30.0, gt=0, allow_inf_nan=False)
 
     model_config = SettingsConfigDict(
         env_file=".env",
