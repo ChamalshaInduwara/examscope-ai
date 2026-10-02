@@ -8,6 +8,68 @@ import type {
   TopicDiscoveryResult,
 } from "@/types/api";
 
+export type YearlyFrequency = {
+  year: number;
+  question_count: number;
+  total_marks: number;
+};
+
+export type TopicAnalytics = {
+  topic_name: string;
+  total_questions: number;
+  total_marks: number;
+  average_marks: number;
+  yearly_frequency: YearlyFrequency[];
+};
+
+export type DistributionItem = {
+  name: string;
+  count: number;
+  percentage: number;
+};
+
+export type HistoricalAnalyticsResult = {
+  total_papers: number;
+  total_questions: number;
+  total_marks: number;
+  topic_analytics: TopicAnalytics[];
+  question_type_distribution: DistributionItem[];
+  difficulty_distribution: DistributionItem[];
+  command_verb_distribution: DistributionItem[];
+};
+
+export type PredictionBacktestRequest = {
+  analytics: HistoricalAnalyticsResult;
+  actual_topics: string[];
+
+  weights?: {
+    frequency: number;
+    recency: number;
+    recurrence: number;
+    marks_importance: number;
+  };
+
+  top_k?: number;
+};
+
+export type PredictionBacktestResult = {
+  top_k: number;
+  predicted_topics: string[];
+  actual_topics: string[];
+  hit_count: number;
+  hit_rate: number;
+  precision_at_k: number;
+
+  matches: Array<{
+    predicted_rank: number;
+    predicted_topic: string;
+    prediction_score: number;
+    actual_topic: string;
+  }>;
+
+  missed_actual_topics: string[];
+};
+
 const FASTAPI_BASE_URL = process.env.FASTAPI_BASE_URL;
 
 if (!FASTAPI_BASE_URL) {
@@ -151,13 +213,25 @@ export function discoverTopicsWithFastApi({
 }
 
 export function generatePredictionsWithFastApi(
-  input: PredictionGenerateRequest
+  input: PredictionGenerateRequest,
 ) {
   return fastApiRequest<PredictionGenerateResult>(
     "/api/v1/predictions/generate",
     {
       method: "POST",
       body: JSON.stringify(input),
-    }
+    },
+  );
+}
+
+export function backtestPredictionsWithFastApi(
+  input: PredictionBacktestRequest,
+) {
+  return fastApiRequest<PredictionBacktestResult>(
+    "/api/v1/predictions/backtest",
+    {
+      method: "POST",
+      body: JSON.stringify(input),
+    },
   );
 }

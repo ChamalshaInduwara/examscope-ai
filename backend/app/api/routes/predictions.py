@@ -11,6 +11,7 @@ from app.schemas.predictions import (
 )
 from app.services.prediction_service import (
     backtest_predictions,
+    generate_exam_predictions,
     generate_predictions,
 )
 
@@ -32,11 +33,11 @@ router = APIRouter(
         },
     },
 )
-async def generate_exam_predictions(
+async def generate_exam_topic_predictions(
     request: PredictionGenerateRequest,
 ):
     try:
-        return generate_predictions(request)
+        return generate_exam_predictions(request)
     except ValueError as exc:
         raise HTTPException(
             status_code=400,
