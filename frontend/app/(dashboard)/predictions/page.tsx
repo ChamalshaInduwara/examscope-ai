@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/card";
 
 import { Badge } from "@/components/ui/badge";
+import { BacktestPanel } from "@/components/predictions/backtest-panel";
 import { generatePredictions } from "@/lib/actions/predictions";
 
 type PredictionsPageProps = {
@@ -28,6 +29,18 @@ type PredictionsPageProps = {
 
 function formatScore(score: number) {
   return `${Math.round(score * 100)}%`;
+}
+
+function getRevisionPriority(score: number) {
+  if (score >= 0.7) {
+    return "High";
+  }
+
+  if (score >= 0.5) {
+    return "Medium";
+  }
+
+  return "Low";
 }
 
 export default async function PredictionsPage({
@@ -210,6 +223,10 @@ export default async function PredictionsPage({
         </Card>
       </div>
 
+      {selectedSubjectId ? (
+        <BacktestPanel subjectId={selectedSubjectId} />
+      ) : null}
+
       {predictions.length === 0 ? (
         <Card>
           <CardContent className="flex min-h-80 items-center justify-center">
@@ -251,7 +268,13 @@ export default async function PredictionsPage({
                     </CardDescription>
                   </div>
 
-                  <Badge>{formatScore(prediction.score)}</Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">
+                      {getRevisionPriority(prediction.score)} priority
+                    </Badge>
+
+                    <Badge>{formatScore(prediction.score)}</Badge>
+                  </div>
                 </div>
               </CardHeader>
 
