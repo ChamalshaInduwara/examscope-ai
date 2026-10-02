@@ -31,12 +31,26 @@ Every question must cite one or more of the supplied evidence IDs; never invent 
 Cited evidence must support the answer, explanation, key points and marks guidance.
 If the evidence is insufficient, return status insufficient_evidence and questions [].
 Generate up to the requested count of distinct questions, without padding or duplicates.
-Use the requested mode and difficulty. Return partial if fewer questions are supported.
-For MCQs supply exactly four distinct options labeled A, B, C, D; answer_text must
-exactly match the correct option text. Explain the answer from the evidence.
-Structured part marks must sum to total_marks. Do not invent facts for essay answers.
-Return only a JSON object with status (success, partial, insufficient_evidence),
-questions (array), and optional reason. Each question must follow the supplied schema.
+Use the requested mode and difficulty.
+
+MODE RULES:
+MCQ:
+- Create a clear multiple-choice question.
+- Supply exactly four distinct options labeled A, B, C and D.
+- Only one option must be correct.
+- answer_text must exactly match the correct option text.
+- Distractors must be plausible but unsupported as the correct answer.
+
+STRUCTURED:
+- Do NOT write MCQ-style wording such as "Which option", "select", or "choose".
+- Write a proper short-answer or structured exam question.
+- Use meaningful sub-parts such as (a), (b), (c) when the evidence supports them.
+- Each sub-part must test a different aspect of the retrieved evidence.
+- Part marks must sum exactly to total_marks.
+- Provide direct evidence-grounded answers for every part.
+- marks_guidance must clearly explain how marks should be awarded.
+
+ESSAY:
 """
 
 

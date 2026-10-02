@@ -3,7 +3,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
 
-from app.schemas.processing import SourceReference
+from app.schemas.processing import ChunkingResult, SourceReference
 
 RAGMode = Literal["mcq", "structured", "essay"]
 RAGDifficulty = Literal["easy", "medium", "hard"]
@@ -38,6 +38,13 @@ class GenerationRequest(BaseModel):
     count: int = Field(default=5, ge=1, le=10)
     top_k: int = Field(default=5, ge=1, le=20)
     minimum_relevance: float = Field(default=0.25, ge=0, le=1)
+
+
+class ChunkGenerationRequest(GenerationRequest):
+    documents: list[ChunkingResult] = Field(
+        min_length=1,
+        max_length=3,
+    )
 
 
 class GeneratedModel(BaseModel):

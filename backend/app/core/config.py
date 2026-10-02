@@ -11,7 +11,13 @@ class Settings(BaseSettings):
 
     gemini_api_key: str | None = Field(default=None, repr=False)
     gemini_model: str | None = None
-    generation_timeout_seconds: float = Field(default=30.0, gt=0, allow_inf_nan=False)
+    openrouter_api_key: str | None = Field(default=None, repr=False)
+    openrouter_model: str = "openrouter/free"
+    generation_timeout_seconds: float = Field(
+        default=30.0,
+        gt=0,
+        allow_inf_nan=False,
+    )
 
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -9,6 +9,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { revalidatePath } from "next/cache";
 
+import { Prisma } from "@/app/generated/prisma/client";
 import { requireUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/prisma";
 import {
@@ -323,6 +324,7 @@ export async function processDocument(formData: FormData) {
     data: {
       processingStatus: "PROCESSING",
       processingError: null,
+      processedChunks: Prisma.JsonNull,
     },
   });
 
@@ -518,6 +520,10 @@ export async function processDocument(formData: FormData) {
           data: {
             processingStatus: "COMPLETED",
             processingError: null,
+
+            processedChunks: JSON.parse(
+              JSON.stringify(processingResult.chunking),
+            ),
           },
         });
       },
