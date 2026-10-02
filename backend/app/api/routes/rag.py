@@ -8,7 +8,12 @@ from starlette.concurrency import run_in_threadpool
 from app.schemas.common import ErrorResponse
 from app.schemas.processing import ChunkingResult
 from app.schemas.rag import (
-    GenerationRequest, GenerationResult, RAGDifficulty, RAGMode, RetrievalResult,
+    ChunkGenerationRequest,
+    GenerationRequest,
+    GenerationResult,
+    RAGDifficulty,
+    RAGMode,
+    RetrievalResult,
 )
 from app.services.document_extractor import SUPPORTED_EXTENSIONS, extract_document
 from app.services.generation_provider import GenerationProviderError
@@ -116,3 +121,38 @@ async def generate(
         return await run_in_threadpool(generate_questions, documents, request)
     except GenerationProviderError as exc:
         raise HTTPException(exc.status_code, str(exc)) from None
+
+
+@router.post(
+    "/generate-from-chunks",
+    response_model=GenerationResult,
+    responses={
+        **ERROR_RESPONSES,
+        502: {
+            "model": ErrorResponse,
+            "description": "Invalid provider response",
+        },
+        503: {
+            "model": ErrorResponse,
+            "description": "Provider is not configured",
+        },
+        504: {
+            "model": ErrorResponse,
+            "description": "Provider timeout",
+        },
+    },
+)
+async def generate_from_chunks(
+    request: ChunkGenerationRequest,
+):
+    try:
+        return await run_in_threadpool(
+            generate_questions,
+            request.documents,
+            request,
+        )
+    except GenerationProviderError as exc:
+        raise HTTPException(
+            exc.status_code,
+            str(exc),
+        ) from None
