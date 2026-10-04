@@ -114,6 +114,7 @@ export type RagMCQOption = {
 };
 
 export type RagMCQQuestion = {
+  generatedQuestionId?: string;
   question_text: string;
   difficulty: RagDifficulty;
   explanation: string;
@@ -133,6 +134,7 @@ export type RagStructuredPart = {
 };
 
 export type RagStructuredQuestion = {
+  generatedQuestionId?: string;
   question_text: string;
   difficulty: RagDifficulty;
   explanation: string;
@@ -145,6 +147,7 @@ export type RagStructuredQuestion = {
 };
 
 export type RagEssayQuestion = {
+  generatedQuestionId?: string;
   question_text: string;
   difficulty: RagDifficulty;
   explanation: string;

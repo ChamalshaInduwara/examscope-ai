@@ -3,10 +3,13 @@
 import { useMemo, useState } from "react";
 import { Eye, EyeOff, Loader2, WandSparkles } from "lucide-react";
 
-import { generateStudyQuestions } from "@/lib/actions/generation";
+import {
+  generateStudyQuestions,
+  type StudyGenerationResult,
+} from "@/lib/actions/generation";
+import { saveQuestionForRevision } from "@/lib/actions/revision";
 import type {
   RagDifficulty,
-  RagGenerationResult,
   RagMode,
 } from "@/lib/api/fastapi";
 
@@ -47,13 +50,22 @@ export function QuestionGeneratorForm({
 
   const [count, setCount] = useState(5);
 
-  const [result, setResult] = useState<RagGenerationResult | null>(null);
+  const [result, setResult] = useState<StudyGenerationResult | null>(null);
 
   const [error, setError] = useState<string | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
 
   const [revealedAnswers, setRevealedAnswers] = useState<number[]>([]);
+
+  const [savingRevisionIndex, setSavingRevisionIndex] =
+    useState<number | null>(null);
+
+  const [savedRevisionIndexes, setSavedRevisionIndexes] = useState<number[]>(
+    [],
+  );
+
+  const [revisionMessage, setRevisionMessage] = useState<string | null>(null);
 
   const subjectDocuments = useMemo(
     () => documents.filter((document) => document.subjectId === subjectId),
@@ -65,6 +77,8 @@ export function QuestionGeneratorForm({
     setSelectedDocumentIds([]);
     setResult(null);
     setError(null);
+    setSavedRevisionIndexes([]);
+    setRevisionMessage(null);
   }
 
   function toggleDocument(documentId: string) {
@@ -87,6 +101,8 @@ export function QuestionGeneratorForm({
     setError(null);
     setResult(null);
     setRevealedAnswers([]);
+    setSavedRevisionIndexes([]);
+    setRevisionMessage(null);
 
     if (!subjectId) {
       setError("Please select a subject.");
@@ -133,6 +149,39 @@ export function QuestionGeneratorForm({
         ? current.filter((item) => item !== index)
         : [...current, index],
     );
+  }
+
+  async function handleSaveForRevision(
+    generatedQuestionId: string | undefined,
+    index: number,
+  ) {
+    if (!generatedQuestionId) {
+      setRevisionMessage(
+        "This generated question has not been saved yet.",
+      );
+      return;
+    }
+
+    setSavingRevisionIndex(index);
+    setRevisionMessage(null);
+
+    try {
+      const response = await saveQuestionForRevision(generatedQuestionId);
+
+      setSavedRevisionIndexes((current) =>
+        current.includes(index) ? current : [...current, index],
+      );
+
+      setRevisionMessage(response.message);
+    } catch (error) {
+      setRevisionMessage(
+        error instanceof Error
+          ? error.message
+          : "Unable to save question for revision.",
+      );
+    } finally {
+      setSavingRevisionIndex(null);
+    }
   }
 
   return (
@@ -286,6 +335,12 @@ export function QuestionGeneratorForm({
             ) : null}
           </div>
 
+          {revisionMessage ? (
+            <p className="text-sm text-muted-foreground">
+              {revisionMessage}
+            </p>
+          ) : null}
+
           {result.mode === "mcq"
             ? result.questions.map((question, index) => {
                 if (!("options" in question)) {
@@ -354,6 +409,28 @@ export function QuestionGeneratorForm({
                           Show Answer
                         </>
                       )}
+                    </Button>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="mt-4 ml-2"
+                      disabled={
+                        savingRevisionIndex === index ||
+                        savedRevisionIndexes.includes(index)
+                      }
+                      onClick={() =>
+                        handleSaveForRevision(
+                          question.generatedQuestionId,
+                          index,
+                        )
+                      }
+                    >
+                      {savingRevisionIndex === index
+                        ? "Saving..."
+                        : savedRevisionIndexes.includes(index)
+                          ? "Saved for Revision"
+                          : "Save for Revision"}
                     </Button>
 
                     {isRevealed ? (

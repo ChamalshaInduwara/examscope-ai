@@ -50,6 +50,7 @@ model User {
 
   subjects       Subject[]
   mockExams      MockExam[]
+  mockExamAttempts MockExamAttempt[]
   revisionItems  RevisionItem[]
   generatedItems GeneratedQuestion[]
 
@@ -273,6 +274,7 @@ model MockExam {
   subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
 
   questions MockExamQuestion[]
+  attempts  MockExamAttempt[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -293,8 +295,55 @@ model MockExamQuestion {
   generatedQuestionId String
   generatedQuestion   GeneratedQuestion @relation(fields: [generatedQuestionId], references: [id], onDelete: Cascade)
 
+  answers MockExamAnswer[]
+
   @@unique([mockExamId, generatedQuestionId])
   @@index([mockExamId, position])
+}
+
+model MockExamAttempt {
+  id String @id @default(cuid())
+
+  startedAt   DateTime @default(now())
+  submittedAt DateTime?
+  timeSpent   Int?
+  score       Float?
+  completed   Boolean  @default(false)
+
+  userId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  mockExamId String
+  mockExam   MockExam @relation(fields: [mockExamId], references: [id], onDelete: Cascade)
+
+  answers MockExamAnswer[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([mockExamId])
+}
+
+model MockExamAnswer {
+  id String @id @default(cuid())
+
+  answerData Json?
+  isCorrect  Boolean?
+  awardedMarks Float?
+
+  attemptId String
+  attempt   MockExamAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+
+  mockExamQuestionId String
+  mockExamQuestion   MockExamQuestion @relation(fields: [mockExamQuestionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([attemptId, mockExamQuestionId])
+  @@index([attemptId])
+  @@index([mockExamQuestionId])
 }
 
 model RevisionItem {
