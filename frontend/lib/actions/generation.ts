@@ -22,6 +22,17 @@ type GenerateQuestionsInput = {
   count: number;
 };
 
+export type StudyGenerationResult = Omit<
+  RagGenerationResult,
+  "questions"
+> & {
+  questions: Array<
+    RagGeneratedQuestion & {
+      generatedQuestionId?: string;
+    }
+  >;
+};
+
 function mapQuestionType(mode: RagMode) {
   switch (mode) {
     case "mcq":
@@ -94,7 +105,7 @@ function getQuestionData(mode: RagMode, question: RagGeneratedQuestion) {
 
 export async function generateStudyQuestions(
   input: GenerateQuestionsInput,
-): Promise<RagGenerationResult> {
+): Promise<StudyGenerationResult> {
   const user = await requireUser();
 
   const subject = await prisma.subject.findFirst({
@@ -172,7 +183,9 @@ export async function generateStudyQuestions(
     ]),
   );
 
-  await prisma.$transaction(async (tx) => {
+  const generatedQuestionIds = await prisma.$transaction(async (tx) => {
+    const ids: string[] = [];
+
     for (const question of result.questions) {
       const sourceEvidence = question.source_evidence_ids
         .map((id) => evidenceById.get(id))
@@ -220,11 +233,19 @@ export async function generateStudyQuestions(
         },
       });
 
-      void createdQuestion;
+      ids.push(createdQuestion.id);
     }
+
+    return ids;
   });
 
   revalidatePath("/generate");
 
-  return result;
+  return {
+    ...result,
+    questions: result.questions.map((question, index) => ({
+      ...question,
+      generatedQuestionId: generatedQuestionIds[index],
+    })),
+  };
 }

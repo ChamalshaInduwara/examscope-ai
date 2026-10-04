@@ -110,6 +110,25 @@ def generate_questions(
     raw = (provider if provider is not None else get_generation_provider()).generate_json(
         SYSTEM_PROMPT, user_prompt,
     )
+    if (
+        isinstance(raw, dict)
+        and "question_text" in raw
+        and "questions" not in raw
+    ):
+        raw = {
+            "status": "success",
+            "questions": [raw],
+            "reason": None,
+        }
+    elif (
+        isinstance(raw, dict)
+        and "questions" in raw
+        and "status" not in raw
+    ):
+        raw = {
+            "status": "success",
+            **raw,
+        }
     try:
         output = ProviderResult.model_validate(raw)
     except ValidationError:
