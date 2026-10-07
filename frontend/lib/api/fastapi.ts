@@ -1,3 +1,5 @@
+import "server-only";
+
 import type {
   DocumentProcessingResult,
   FastApiErrorResponse,
@@ -176,11 +178,26 @@ export type RagGenerationResult = {
   reason: string | null;
 };
 
-const FASTAPI_BASE_URL = process.env.FASTAPI_BASE_URL;
+const FASTAPI_BASE_URL =
+  process.env.FASTAPI_BASE_URL;
+
+const internalApiKey =
+  process.env.INTERNAL_API_KEY;
 
 if (!FASTAPI_BASE_URL) {
-  throw new Error("FASTAPI_BASE_URL is not configured.");
+  throw new Error(
+    "FASTAPI_BASE_URL is not configured.",
+  );
 }
+
+if (!internalApiKey) {
+  throw new Error(
+    "INTERNAL_API_KEY is not configured.",
+  );
+}
+
+const INTERNAL_API_KEY: string =
+  internalApiKey;
 
 export class FastApiError extends Error {
   status: number;
@@ -197,6 +214,10 @@ export class FastApiError extends Error {
 
 async function fastApiRequest<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers);
+  headers.set(
+    "X-Internal-API-Key",
+    INTERNAL_API_KEY,
+  );
 
   if (
     init?.body &&

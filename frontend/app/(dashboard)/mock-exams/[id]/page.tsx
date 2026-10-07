@@ -35,6 +35,61 @@ function formatTimeSpent(seconds: number | null) {
   return `${minutes}m ${remainingSeconds}s`;
 }
 
+function getSafeAttemptQuestionData(
+  type: string,
+  value: unknown,
+) {
+  if (
+    !value ||
+    typeof value !== "object" ||
+    Array.isArray(value)
+  ) {
+    return {};
+  }
+
+  const data =
+    value as Record<string, unknown>;
+
+  if (type === "MCQ") {
+    return {
+      options: Array.isArray(data.options)
+        ? data.options
+        : [],
+    };
+  }
+
+  if (type === "STRUCTURED") {
+    const parts =
+      Array.isArray(data.parts)
+        ? data.parts
+        : [];
+
+    return {
+      parts: parts.map((part) => {
+        if (
+          !part ||
+          typeof part !== "object" ||
+          Array.isArray(part)
+        ) {
+          return {};
+        }
+
+        const safePart =
+          part as Record<string, unknown>;
+
+        return {
+          label: safePart.label,
+          question_text:
+            safePart.question_text,
+          marks: safePart.marks,
+        };
+      }),
+    };
+  }
+
+  return {};
+}
+
 export default async function MockExamPage({
   params,
 }: MockExamPageProps) {
@@ -114,6 +169,38 @@ export default async function MockExamPage({
       answer,
     ]) ?? [],
   );
+  const safeAttemptQuestions =
+    exam.questions.map((examQuestion) => ({
+      id: examQuestion.id,
+      position: examQuestion.position,
+      marks: examQuestion.marks,
+
+      generatedQuestion: {
+        id:
+          examQuestion.generatedQuestion.id,
+
+        questionText:
+          examQuestion.generatedQuestion
+            .questionText,
+
+        type:
+          examQuestion.generatedQuestion.type,
+
+        difficulty:
+          examQuestion.generatedQuestion
+            .difficulty,
+
+        marks:
+          examQuestion.generatedQuestion.marks,
+
+        questionData:
+          getSafeAttemptQuestionData(
+            examQuestion.generatedQuestion.type,
+            examQuestion.generatedQuestion
+              .questionData,
+          ),
+      },
+    }));
 
   return (
     <div className="space-y-8">
@@ -197,43 +284,45 @@ export default async function MockExamPage({
         </Card>
       ) : null}
 
-      <div>
-        <h2 className="text-xl font-semibold">Questions</h2>
-        <div className="mt-4 space-y-4">
-          {exam.questions.map((examQuestion) => {
-            const question = examQuestion.generatedQuestion;
-            const marks = examQuestion.marks ?? question.marks ?? 0;
+      {exam.status !== "READY" ? (
+        <div>
+          <h2 className="text-xl font-semibold">Questions</h2>
+          <div className="mt-4 space-y-4">
+            {exam.questions.map((examQuestion) => {
+              const question = examQuestion.generatedQuestion;
+              const marks = examQuestion.marks ?? question.marks ?? 0;
 
-            return (
-              <Card key={examQuestion.id}>
-                <CardHeader>
-                  <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        Question {examQuestion.position}
-                      </p>
-                      <CardTitle className="mt-2 text-lg">
-                        {question.questionText}
-                      </CardTitle>
+              return (
+                <Card key={examQuestion.id}>
+                  <CardHeader>
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground">
+                          Question {examQuestion.position}
+                        </p>
+                        <CardTitle className="mt-2 text-lg">
+                          {question.questionText}
+                        </CardTitle>
+                      </div>
+                      <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                        <span className="rounded-full border px-2 py-1">
+                          {question.type}
+                        </span>
+                        <span className="rounded-full border px-2 py-1">
+                          {question.difficulty}
+                        </span>
+                        <span className="rounded-full border px-2 py-1">
+                          {marks} {marks === 1 ? "mark" : "marks"}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                      <span className="rounded-full border px-2 py-1">
-                        {question.type}
-                      </span>
-                      <span className="rounded-full border px-2 py-1">
-                        {question.difficulty}
-                      </span>
-                      <span className="rounded-full border px-2 py-1">
-                        {marks} {marks === 1 ? "mark" : "marks"}
-                      </span>
-                    </div>
-                  </div>
-                </CardHeader>
-              </Card>
-            );
-          })}
+                  </CardHeader>
+                </Card>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      ) : null}
 
       {exam.status === "COMPLETED" && latestAttempt ? (
         <div className="space-y-6">
@@ -395,7 +484,7 @@ export default async function MockExamPage({
         <MockExamAttempt
           mockExamId={exam.id}
           duration={exam.duration}
-          questions={exam.questions}
+          questions={safeAttemptQuestions}
         />
       ) : null}
     </div>

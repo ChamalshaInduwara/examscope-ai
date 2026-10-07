@@ -113,10 +113,12 @@ export function MockExamBuilder({
               (id) =>
                 id !== questionId,
             )
-          : [
-              ...current,
-              questionId,
-            ],
+          : current.length >= 100
+            ? current
+            : [
+                ...current,
+                questionId,
+              ],
     );
   }
 
@@ -142,9 +144,20 @@ export function MockExamBuilder({
       return;
     }
 
-    if (duration <= 0) {
+    if (
+      !Number.isInteger(duration) ||
+      duration < 1 ||
+      duration > 360
+    ) {
       setError(
-        "Duration must be greater than zero.",
+        "Duration must be between 1 and 360 minutes.",
+      );
+      return;
+    }
+
+    if (selectedQuestionIds.length > 100) {
+      setError(
+        "A mock exam can contain at most 100 questions.",
       );
       return;
     }
@@ -234,6 +247,7 @@ export function MockExamBuilder({
           <Input
             id="title"
             value={title}
+            maxLength={150}
             onChange={(event) =>
               setTitle(
                 event.target.value,
@@ -252,6 +266,7 @@ export function MockExamBuilder({
             id="duration"
             type="number"
             min={1}
+            max={360}
             value={duration}
             onChange={(event) =>
               setDuration(
@@ -275,6 +290,7 @@ export function MockExamBuilder({
         <textarea
           id="instructions"
           value={instructions}
+          maxLength={2000}
           onChange={(event) =>
             setInstructions(
               event.target.value,

@@ -23,6 +23,7 @@ from app.services.text_chunker import chunk_document
 from app.services.text_cleaner import clean_document
 
 router = APIRouter(prefix="/rag", tags=["RAG"])
+MAX_UPLOAD_SIZE = 20 * 1024 * 1024
 ERROR_RESPONSES = {
     400: {"model": ErrorResponse, "description": "Invalid or empty document/input"},
     415: {"model": ErrorResponse, "description": "Unsupported file type"},
@@ -42,10 +43,24 @@ def _process_upload(upload: UploadFile) -> ChunkingResult:
         with NamedTemporaryFile(delete=False, suffix=extension) as temporary_file:
             temporary_path = Path(temporary_file.name)
             # Stream to disk rather than making another full copy in memory.
+            total_bytes = 0
+
             while content := upload.file.read(1024 * 1024):
+                total_bytes += len(content)
+
+                if total_bytes > MAX_UPLOAD_SIZE:
+                    raise HTTPException(
+                        status_code=413,
+                        detail="File size must not exceed 20 MB",
+                    )
+
                 temporary_file.write(content)
-            if temporary_file.tell() == 0:
-                raise HTTPException(400, "Uploaded file is empty")
+
+            if total_bytes == 0:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Uploaded file is empty",
+                )
         extracted = extract_document(temporary_path).model_copy(update={"filename": filename})
         chunked = chunk_document(clean_document(extracted))
         if not chunked.chunks:

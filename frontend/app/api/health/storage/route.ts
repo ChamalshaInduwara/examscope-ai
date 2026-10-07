@@ -17,7 +17,6 @@ export async function GET() {
     return NextResponse.json({
       status: "ok",
       storage: "connected",
-      bucket: S3_BUCKET_NAME,
     });
   } catch (error) {
     console.error("Storage health check failed:", error);

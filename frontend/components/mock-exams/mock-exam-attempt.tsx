@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Clock3, Play } from "lucide-react";
 
 import {
@@ -64,6 +70,9 @@ export function MockExamAttempt({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const autoSubmitStartedRef = useRef(false);
+  const timeExpired =
+    started && secondsLeft === 0;
 
   useEffect(() => {
     if (!started || secondsLeft <= 0) {
@@ -143,46 +152,91 @@ export function MockExamAttempt({
     }
   }
 
+  const submitExam = useCallback(
+    async (showConfirmation: boolean) => {
+      if (
+        !attemptId ||
+        submitted ||
+        isSubmitting
+      ) {
+        return;
+      }
+
+      if (
+        showConfirmation &&
+        !window.confirm(
+          "Submit this mock exam now?",
+        )
+      ) {
+        return;
+      }
+
+      setIsSubmitting(true);
+      setSubmitError(null);
+
+      try {
+        await submitMockExamAttempt({
+          attemptId,
+          answers: questions.map(
+            (examQuestion) => ({
+              generatedQuestionId:
+                examQuestion.generatedQuestion.id,
+
+              answerData:
+                answers[
+                  examQuestion.generatedQuestion.id
+                ] ?? "",
+            }),
+          ),
+        });
+
+        setSubmitted(true);
+      } catch (error) {
+        setSubmitError(
+          error instanceof Error
+            ? error.message
+            : "Unable to submit mock exam.",
+        );
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [
+      answers,
+      attemptId,
+      isSubmitting,
+      questions,
+      submitted,
+    ],
+  );
+
   async function handleSubmitExam() {
-    if (!attemptId) {
-      setSubmitError(
-        "No active mock exam attempt was found.",
-      );
-      return;
-    }
-
-    const confirmed = window.confirm(
-      "Submit this mock exam now?",
-    );
-
-    if (!confirmed) {
-      return;
-    }
-
-    setIsSubmitting(true);
-    setSubmitError(null);
-
-    try {
-      await submitMockExamAttempt({
-        attemptId,
-        answers: questions.map((examQuestion) => ({
-          generatedQuestionId: examQuestion.generatedQuestion.id,
-          answerData:
-            answers[examQuestion.generatedQuestion.id] ?? "",
-        })),
-      });
-
-      setSubmitted(true);
-    } catch (error) {
-      setSubmitError(
-        error instanceof Error
-          ? error.message
-          : "Unable to submit mock exam.",
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
+    await submitExam(true);
   }
+
+  useEffect(() => {
+    if (
+      !started ||
+      submitted ||
+      isSubmitting ||
+      !attemptId ||
+      secondsLeft !== 5 ||
+      autoSubmitStartedRef.current
+    ) {
+      return;
+    }
+
+    autoSubmitStartedRef.current = true;
+
+    void submitExam(false);
+  }, [
+    attemptId,
+    isSubmitting,
+    secondsLeft,
+    started,
+    submitted,
+    submitExam,
+  ]);
 
   if (!started) {
     return (
@@ -255,6 +309,7 @@ export function MockExamAttempt({
                       name={question.id}
                       value={option.label}
                       checked={answers[question.id] === option.label}
+                      disabled={timeExpired || submitted}
                       onChange={() =>
                         setTextAnswer(question.id, option.label)
                       }
@@ -310,6 +365,7 @@ export function MockExamAttempt({
                           event.target.value,
                         )
                       }
+                      disabled={timeExpired || submitted}
                       className="w-full rounded-md border bg-background px-3 py-2 text-sm"
                       placeholder="Enter your answer..."
                     />
@@ -345,6 +401,7 @@ export function MockExamAttempt({
               onChange={(event) =>
                 setTextAnswer(question.id, event.target.value)
               }
+              disabled={timeExpired || submitted}
               className="mt-4 w-full rounded-md border bg-background px-3 py-2 text-sm"
               placeholder="Write your essay answer..."
             />
@@ -355,7 +412,11 @@ export function MockExamAttempt({
       <Button
         type="button"
         onClick={handleSubmitExam}
-        disabled={isSubmitting || submitted}
+        disabled={
+          isSubmitting ||
+          submitted ||
+          timeExpired
+        }
       >
         {isSubmitting
           ? "Submitting..."
@@ -374,8 +435,10 @@ export function MockExamAttempt({
         </p>
       ) : null}
 
-      {secondsLeft === 0 ? (
-        <p className="text-sm text-destructive">Time is up.</p>
+      {timeExpired ? (
+        <p className="text-sm text-destructive">
+          Time is up. This mock exam can no longer be edited or submitted.
+        </p>
       ) : null}
     </div>
   );

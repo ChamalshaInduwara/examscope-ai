@@ -8,6 +8,10 @@ class Settings(BaseSettings):
     environment: str = "development"
     debug: bool = True
     api_prefix: str = "/api/v1"
+    internal_api_key: str | None = Field(
+        default=None,
+        repr=False,
+    )
 
     gemini_api_key: str | None = Field(default=None, repr=False)
     gemini_model: str | None = None

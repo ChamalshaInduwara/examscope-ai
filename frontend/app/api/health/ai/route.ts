@@ -4,13 +4,11 @@ import { getFastApiHealth } from "@/lib/api/fastapi";
 
 export async function GET() {
   try {
-    const fastApiHealth =
-      await getFastApiHealth();
+    await getFastApiHealth();
 
     return NextResponse.json({
       status: "ok",
       aiService: "connected",
-      fastApi: fastApiHealth,
     });
   } catch (error) {
     console.error(

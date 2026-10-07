@@ -21,8 +21,13 @@ class PredictionTopicInput(BaseModel):
 
 
 class PredictionGenerateRequest(BaseModel):
-    questions: list[PredictionQuestionInput]
-    topics: list[PredictionTopicInput]
+    questions: list[PredictionQuestionInput] = Field(
+        max_length=5000,
+    )
+    topics: list[PredictionTopicInput] = Field(
+        min_length=1,
+        max_length=500,
+    )
 
     max_predictions: int = Field(
         default=10,
@@ -129,7 +134,10 @@ class PredictionRequest(BaseModel):
 
 class PredictionBacktestRequest(BaseModel):
     analytics: HistoricalAnalyticsResult
-    actual_topics: list[str]
+    actual_topics: list[str] = Field(
+        min_length=1,
+        max_length=200,
+    )
     weights: PredictionWeights = Field(
         default_factory=PredictionWeights
     )
