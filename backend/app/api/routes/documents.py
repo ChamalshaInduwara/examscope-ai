@@ -25,6 +25,8 @@ router = APIRouter(
     tags=["Documents"],
 )
 
+MAX_UPLOAD_SIZE = 20 * 1024 * 1024
+
 
 @router.post(
     "/extract",
@@ -62,6 +64,12 @@ async def extract_uploaded_document(
             raise HTTPException(
                 status_code=400,
                 detail="Uploaded file is empty",
+            )
+
+        if len(file_content) > MAX_UPLOAD_SIZE:
+            raise HTTPException(
+                status_code=413,
+                detail="File size must not exceed 20 MB",
             )
 
         with NamedTemporaryFile(
@@ -133,6 +141,12 @@ async def analyze_uploaded_questions(
             raise HTTPException(
                 status_code=400,
                 detail="Uploaded file is empty",
+            )
+
+        if len(file_content) > MAX_UPLOAD_SIZE:
+            raise HTTPException(
+                status_code=413,
+                detail="File size must not exceed 20 MB",
             )
 
         with NamedTemporaryFile(
@@ -221,6 +235,12 @@ async def process_uploaded_document(
             raise HTTPException(
                 status_code=400,
                 detail="Uploaded file is empty",
+            )
+
+        if len(file_content) > MAX_UPLOAD_SIZE:
+            raise HTTPException(
+                status_code=413,
+                detail="File size must not exceed 20 MB",
             )
 
         with NamedTemporaryFile(

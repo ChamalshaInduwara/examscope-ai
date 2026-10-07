@@ -19,6 +19,8 @@ export async function createMockExam(
   const user = await requireUser();
 
   const title = input.title.trim();
+  const instructions =
+    input.instructions?.trim() ?? "";
 
   if (!title) {
     throw new Error(
@@ -26,12 +28,25 @@ export async function createMockExam(
     );
   }
 
+  if (title.length > 150) {
+    throw new Error(
+      "Mock exam title must not exceed 150 characters.",
+    );
+  }
+
   if (
     !Number.isInteger(input.duration) ||
-    input.duration <= 0
+    input.duration <= 0 ||
+    input.duration > 360
   ) {
     throw new Error(
-      "Duration must be greater than zero.",
+      "Duration must be between 1 and 360 minutes.",
+    );
+  }
+
+  if (instructions.length > 2000) {
+    throw new Error(
+      "Instructions must not exceed 2000 characters.",
     );
   }
 
@@ -59,6 +74,12 @@ export async function createMockExam(
       input.generatedQuestionIds,
     ),
   ];
+
+  if (questionIds.length > 100) {
+    throw new Error(
+      "A mock exam can contain at most 100 questions.",
+    );
+  }
 
   if (questionIds.length === 0) {
     throw new Error(
@@ -122,8 +143,7 @@ export async function createMockExam(
         totalMarks,
 
         instructions:
-          input.instructions?.trim() ||
-          null,
+          instructions || null,
 
         status: "DRAFT",
 
@@ -180,6 +200,7 @@ export async function markMockExamReady(
       where: {
         id: mockExamId,
         userId: user.id,
+        status: "DRAFT",
       },
 
       include: {
@@ -193,7 +214,7 @@ export async function markMockExamReady(
 
   if (!exam) {
     throw new Error(
-      "Mock exam not found.",
+      "Only draft mock exams can be marked ready.",
     );
   }
 
@@ -239,6 +260,7 @@ export async function startMockExamAttempt(
 
       select: {
         id: true,
+        duration: true,
       },
     });
 
@@ -267,6 +289,46 @@ export async function startMockExamAttempt(
     });
 
   if (existingAttempt) {
+    const elapsedSeconds = Math.max(
+      0,
+      Math.floor(
+        (Date.now() -
+          existingAttempt.startedAt.getTime()) /
+          1000,
+      ),
+    );
+
+    const allowedSeconds =
+      exam.duration * 60;
+
+    if (elapsedSeconds >= allowedSeconds) {
+      await prisma.mockExamAttempt.update({
+        where: {
+          id: existingAttempt.id,
+        },
+
+        data: {
+          completed: true,
+          submittedAt: new Date(),
+          timeSpent: allowedSeconds,
+        },
+      });
+
+      await prisma.mockExam.update({
+        where: {
+          id: exam.id,
+        },
+
+        data: {
+          status: "COMPLETED",
+        },
+      });
+
+      throw new Error(
+        "This mock exam attempt has expired.",
+      );
+    }
+
     return {
       success: true,
       attemptId:
@@ -351,6 +413,26 @@ export async function submitMockExamAttempt(
     );
   }
 
+  const submittedAt = new Date();
+
+  const elapsedSeconds = Math.max(
+    0,
+    Math.floor(
+      (submittedAt.getTime() -
+        attempt.startedAt.getTime()) /
+        1000,
+    ),
+  );
+
+  const allowedSeconds =
+    attempt.mockExam.duration * 60;
+
+  if (elapsedSeconds > allowedSeconds) {
+    throw new Error(
+      "The mock exam time limit has expired.",
+    );
+  }
+
   const submittedAnswerMap =
     new Map(
       input.answers.map(
@@ -361,16 +443,8 @@ export async function submitMockExamAttempt(
       ),
     );
 
-  const submittedAt = new Date();
-
-  const timeSpent = Math.max(
-    0,
-    Math.floor(
-      (submittedAt.getTime() -
-        attempt.startedAt.getTime()) /
-        1000,
-    ),
-  );
+  const timeSpent =
+    elapsedSeconds;
 
   await prisma.$transaction(
     async (tx) => {

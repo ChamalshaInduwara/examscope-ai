@@ -107,6 +107,49 @@ export async function generateStudyQuestions(
   input: GenerateQuestionsInput,
 ): Promise<StudyGenerationResult> {
   const user = await requireUser();
+  const topic = input.topic.trim();
+
+  if (!topic) {
+    throw new Error(
+      "Topic is required.",
+    );
+  }
+
+  if (topic.length > 500) {
+    throw new Error(
+      "Topic must not exceed 500 characters.",
+    );
+  }
+
+  if (
+    !Number.isInteger(input.count) ||
+    input.count < 1 ||
+    input.count > 10
+  ) {
+    throw new Error(
+      "Question count must be between 1 and 10.",
+    );
+  }
+
+  if (
+    !["mcq", "structured", "essay"].includes(
+      input.mode,
+    )
+  ) {
+    throw new Error(
+      "Invalid question type.",
+    );
+  }
+
+  if (
+    !["easy", "medium", "hard"].includes(
+      input.difficulty,
+    )
+  ) {
+    throw new Error(
+      "Invalid difficulty.",
+    );
+  }
 
   const subject = await prisma.subject.findFirst({
     where: {
@@ -165,7 +208,7 @@ export async function generateStudyQuestions(
 
   const result = await generateQuestionsFromChunksWithFastApi({
     documents: processedDocuments,
-    topic: input.topic.trim(),
+    topic,
     mode: input.mode,
     difficulty: input.difficulty,
     subjectName: subject.name,

@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -13,6 +13,7 @@ from app.core.exceptions import (
     http_exception_handler,
     validation_exception_handler,
 )
+from app.core.security import require_internal_api_key
 from app.schemas.common import HealthResponse, RootResponse
 
 app = FastAPI(
@@ -35,32 +36,50 @@ app.add_exception_handler(
 app.include_router(
     analytics_router,
     prefix=settings.api_prefix,
+    dependencies=[
+        Depends(require_internal_api_key),
+    ],
 )
 
 app.include_router(
     documents_router,
     prefix=settings.api_prefix,
+    dependencies=[
+        Depends(require_internal_api_key),
+    ],
 )
 
 app.include_router(
     embeddings_router,
     prefix=settings.api_prefix,
+    dependencies=[
+        Depends(require_internal_api_key),
+    ],
 )
 
 app.include_router(
     topics_router,
     prefix=settings.api_prefix,
+    dependencies=[
+        Depends(require_internal_api_key),
+    ],
 )
 
 app.include_router(
     predictions_router,
     prefix=settings.api_prefix,
+    dependencies=[
+        Depends(require_internal_api_key),
+    ],
 )
 
 
 app.include_router(
     rag_router,
     prefix=settings.api_prefix,
+    dependencies=[
+        Depends(require_internal_api_key),
+    ],
 )
 
 
@@ -68,7 +87,6 @@ app.include_router(
 def root():
     return {
         "message": f"{settings.app_name} is running",
-        "environment": settings.environment,
     }
 
 
@@ -76,7 +94,4 @@ def root():
 def health_check():
     return {
         "status": "ok",
-        "service": settings.app_name,
-        "version": settings.app_version,
-        "environment": settings.environment,
     }

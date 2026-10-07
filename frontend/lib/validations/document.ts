@@ -9,12 +9,19 @@ export const ALLOWED_FILE_EXTENSIONS = [
   "txt",
 ] as const;
 
-export const ALLOWED_MIME_TYPES = [
-  "application/pdf",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  "text/plain",
-];
+export const MIME_TYPES_BY_EXTENSION = {
+  pdf: ["application/pdf"],
+
+  docx: [
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ],
+
+  pptx: [
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  ],
+
+  txt: ["text/plain"],
+} as const;
 
 export const documentMetadataSchema = z.object({
   subjectId: z.string().min(1, "Please select a subject."),
@@ -80,8 +87,18 @@ export function validateDocumentFile(file: File) {
     return "Only PDF, DOCX, PPTX and TXT files are allowed.";
   }
 
-  if (file.type && !ALLOWED_MIME_TYPES.includes(file.type)) {
-    return "The selected file type is not supported.";
+  const expectedMimeTypes =
+    MIME_TYPES_BY_EXTENSION[
+      extension as keyof typeof MIME_TYPES_BY_EXTENSION
+    ];
+
+  if (
+    file.type &&
+    !expectedMimeTypes.some(
+      (mimeType) => mimeType === file.type
+    )
+  ) {
+    return "The file extension does not match the detected file type.";
   }
 
   return null;
