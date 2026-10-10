@@ -154,3 +154,226 @@ export async function getSubjectHistoricalAnalytics(
     command_verb_distribution: [],
   };
 }
+
+export type AnalyticsDashboardData = {
+  overview: {
+    subjects: number;
+    documents: number;
+    questions: number;
+    generatedQuestions: number;
+    revisionItems: number;
+    completedMockExams: number;
+  };
+
+  questionTypes: {
+    name: string;
+    count: number;
+  }[];
+
+  questionsByYear: {
+    year: number;
+    count: number;
+  }[];
+
+  topTopics: {
+    name: string;
+    subjectName: string;
+    questionCount: number;
+  }[];
+
+  topPredictions: {
+    id: string;
+    title: string;
+    score: number;
+    subjectName: string;
+    topicName: string | null;
+  }[];
+};
+
+export async function getAnalyticsDashboardData(): Promise<AnalyticsDashboardData> {
+  const user = await requireUser();
+
+  const [
+    subjects,
+    documents,
+    questions,
+    generatedQuestions,
+    revisionItems,
+    completedMockExams,
+    topics,
+    predictions,
+  ] = await Promise.all([
+    prisma.subject.findMany({
+      where: {
+        userId: user.id,
+        archived: false,
+      },
+      select: {
+        id: true,
+      },
+    }),
+
+    prisma.document.count({
+      where: {
+        subject: {
+          userId: user.id,
+          archived: false,
+        },
+      },
+    }),
+
+    prisma.question.findMany({
+      where: {
+        subject: {
+          userId: user.id,
+          archived: false,
+        },
+      },
+      select: {
+        type: true,
+        year: true,
+      },
+    }),
+
+    prisma.generatedQuestion.count({
+      where: {
+        userId: user.id,
+        subject: {
+          archived: false,
+        },
+      },
+    }),
+
+    prisma.revisionItem.count({
+      where: {
+        userId: user.id,
+        subject: {
+          archived: false,
+        },
+      },
+    }),
+
+    prisma.mockExamAttempt.count({
+      where: {
+        userId: user.id,
+        completed: true,
+        mockExam: {
+          subject: {
+            archived: false,
+          },
+        },
+      },
+    }),
+
+    prisma.topic.findMany({
+      where: {
+        subject: {
+          userId: user.id,
+          archived: false,
+        },
+      },
+      select: {
+        name: true,
+        subject: {
+          select: {
+            name: true,
+          },
+        },
+        _count: {
+          select: {
+            questions: true,
+          },
+        },
+      },
+    }),
+
+    prisma.prediction.findMany({
+      where: {
+        subject: {
+          userId: user.id,
+          archived: false,
+        },
+      },
+      orderBy: {
+        score: "desc",
+      },
+      take: 5,
+      select: {
+        id: true,
+        title: true,
+        score: true,
+        subject: {
+          select: {
+            name: true,
+          },
+        },
+        topic: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    }),
+  ]);
+
+  const questionTypeMap = new Map<string, number>();
+
+  for (const question of questions) {
+    questionTypeMap.set(
+      question.type,
+      (questionTypeMap.get(question.type) ?? 0) + 1,
+    );
+  }
+
+  const yearMap = new Map<number, number>();
+
+  for (const question of questions) {
+    if (question.year === null) {
+      continue;
+    }
+
+    yearMap.set(question.year, (yearMap.get(question.year) ?? 0) + 1);
+  }
+
+  return {
+    overview: {
+      subjects: subjects.length,
+      documents,
+      questions: questions.length,
+      generatedQuestions,
+      revisionItems,
+      completedMockExams,
+    },
+
+    questionTypes: Array.from(questionTypeMap.entries()).map(
+      ([name, count]) => ({
+        name,
+        count,
+      }),
+    ),
+
+    questionsByYear: Array.from(yearMap.entries())
+      .map(([year, count]) => ({
+        year,
+        count,
+      }))
+      .sort((a, b) => a.year - b.year),
+
+    topTopics: topics
+      .map((topic) => ({
+        name: topic.name,
+        subjectName: topic.subject.name,
+        questionCount: topic._count.questions,
+      }))
+      .sort((a, b) => b.questionCount - a.questionCount)
+      .slice(0, 8),
+
+    topPredictions: predictions.map((prediction) => ({
+      id: prediction.id,
+      title: prediction.title,
+      score: prediction.score,
+      subjectName: prediction.subject.name,
+      topicName: prediction.topic?.name ?? null,
+    })),
+  };
+}
