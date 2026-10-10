@@ -168,6 +168,20 @@ export async function generateStudyQuestions(
     throw new Error("Subject not found.");
   }
 
+  const existingTopic = await prisma.topic.findFirst({
+    where: {
+      subjectId: subject.id,
+      name: {
+        equals: topic,
+        mode: "insensitive",
+      },
+    },
+
+    select: {
+      id: true,
+    },
+  });
+
   const uniqueDocumentIds = [...new Set(input.documentIds)];
 
   if (uniqueDocumentIds.length === 0 || uniqueDocumentIds.length > 3) {
@@ -261,6 +275,7 @@ export async function generateStudyQuestions(
 
           userId: user.id,
           subjectId: subject.id,
+          topicId: existingTopic?.id ?? null,
 
           answer: {
             create: {

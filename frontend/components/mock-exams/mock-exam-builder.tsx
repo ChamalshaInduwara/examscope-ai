@@ -22,6 +22,10 @@ type GeneratedQuestionOption = {
   difficulty: string;
   marks: number | null;
   subjectId: string;
+  topic: {
+    id: string;
+    name: string;
+  } | null;
 };
 
 type MockExamBuilderProps = {
@@ -36,6 +40,15 @@ export function MockExamBuilder({
   const [subjectId, setSubjectId] = useState(
     subjects[0]?.id ?? "",
   );
+
+  const [typeFilter, setTypeFilter] =
+    useState("ALL");
+
+  const [difficultyFilter, setDifficultyFilter] =
+    useState("ALL");
+
+  const [topicFilter, setTopicFilter] =
+    useState("ALL");
 
   const [title, setTitle] =
     useState("");
@@ -69,6 +82,57 @@ export function MockExamBuilder({
     [questions, subjectId],
   );
 
+  const subjectTopics = useMemo(() => {
+    const topics = new Map<string, string>();
+
+    questions
+      .filter(
+        (question) =>
+          question.subjectId === subjectId &&
+          question.topic !== null,
+      )
+      .forEach((question) => {
+        if (question.topic) {
+          topics.set(
+            question.topic.id,
+            question.topic.name,
+          );
+        }
+      });
+
+    return [...topics.entries()].sort(
+      ([, firstName], [, secondName]) =>
+        firstName.localeCompare(secondName),
+    );
+  }, [questions, subjectId]);
+
+  const filteredQuestions = useMemo(
+    () =>
+      subjectQuestions.filter((question) => {
+        const matchesType =
+          typeFilter === "ALL" ||
+          question.type === typeFilter;
+        const matchesDifficulty =
+          difficultyFilter === "ALL" ||
+          question.difficulty === difficultyFilter;
+        const matchesTopic =
+          topicFilter === "ALL" ||
+          question.topic?.id === topicFilter;
+
+        return (
+          matchesType &&
+          matchesDifficulty &&
+          matchesTopic
+        );
+      }),
+    [
+      subjectQuestions,
+      typeFilter,
+      difficultyFilter,
+      topicFilter,
+    ],
+  );
+
   const selectedQuestions = useMemo(
     () =>
       subjectQuestions.filter(
@@ -99,6 +163,9 @@ export function MockExamBuilder({
   ) {
     setSubjectId(value);
     setSelectedQuestionIds([]);
+    setTypeFilter("ALL");
+    setDifficultyFilter("ALL");
+    setTopicFilter("ALL");
     setError(null);
     setSuccess(null);
   }
@@ -324,15 +391,83 @@ export function MockExamBuilder({
           </div>
         </div>
 
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div className="space-y-2">
+            <Label htmlFor="question-type-filter">
+              Type
+            </Label>
+
+            <select
+              id="question-type-filter"
+              value={typeFilter}
+              onChange={(event) =>
+                setTypeFilter(event.target.value)
+              }
+              className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+            >
+              <option value="ALL">All types</option>
+              <option value="MCQ">MCQ</option>
+              <option value="STRUCTURED">Structured</option>
+              <option value="ESSAY">Essay</option>
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="question-difficulty-filter">
+              Difficulty
+            </Label>
+
+            <select
+              id="question-difficulty-filter"
+              value={difficultyFilter}
+              onChange={(event) =>
+                setDifficultyFilter(event.target.value)
+              }
+              className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+            >
+              <option value="ALL">All difficulties</option>
+              <option value="EASY">Easy</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HARD">Hard</option>
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="question-topic-filter">
+              Topic
+            </Label>
+
+            <select
+              id="question-topic-filter"
+              value={topicFilter}
+              onChange={(event) =>
+                setTopicFilter(event.target.value)
+              }
+              className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+            >
+              <option value="ALL">All topics</option>
+              {subjectTopics.map(([id, name]) => (
+                <option key={id} value={id}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
         {subjectQuestions.length === 0 ? (
           <div className="rounded-md border p-4 text-sm text-muted-foreground">
             No generated questions are
             available for this subject.
             Generate some questions first.
           </div>
+        ) : filteredQuestions.length === 0 ? (
+          <div className="rounded-md border p-4 text-sm text-muted-foreground">
+            No questions match the selected filters.
+          </div>
         ) : (
           <div className="max-h-[32rem] space-y-2 overflow-y-auto pr-1">
-            {subjectQuestions.map(
+            {filteredQuestions.map(
               (question) => {
                 const checked =
                   selectedQuestionIds.includes(

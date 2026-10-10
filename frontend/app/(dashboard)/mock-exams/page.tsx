@@ -50,6 +50,12 @@ export default async function MockExamsPage() {
           difficulty: true,
           marks: true,
           subjectId: true,
+          topic: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
 
         orderBy: {
