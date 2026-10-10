@@ -587,6 +587,28 @@ export function QuestionGeneratorForm({
                       )}
                     </Button>
 
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="mt-4 ml-2"
+                      disabled={
+                        savingRevisionIndex === index ||
+                        savedRevisionIndexes.includes(index)
+                      }
+                      onClick={() =>
+                        handleSaveForRevision(
+                          question.generatedQuestionId,
+                          index,
+                        )
+                      }
+                    >
+                      {savingRevisionIndex === index
+                        ? "Saving..."
+                        : savedRevisionIndexes.includes(index)
+                          ? "Saved for Revision"
+                          : "Save for Revision"}
+                    </Button>
+
                     {isRevealed ? (
                       <div className="mt-4 space-y-5 rounded-md border bg-muted/30 p-4">
                         {question.parts.length > 0 ? (
@@ -746,6 +768,28 @@ export function QuestionGeneratorForm({
                           Show Answer
                         </>
                       )}
+                    </Button>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="mt-4 ml-2"
+                      disabled={
+                        savingRevisionIndex === index ||
+                        savedRevisionIndexes.includes(index)
+                      }
+                      onClick={() =>
+                        handleSaveForRevision(
+                          question.generatedQuestionId,
+                          index,
+                        )
+                      }
+                    >
+                      {savingRevisionIndex === index
+                        ? "Saving..."
+                        : savedRevisionIndexes.includes(index)
+                          ? "Saved for Revision"
+                          : "Save for Revision"}
                     </Button>
 
                     {isRevealed ? (
