@@ -11,7 +11,6 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -72,9 +71,9 @@ export default function RegisterPage() {
             <BrainCircuit className="size-6" />
           </div>
 
-          <CardTitle className="text-2xl">
-            Create your ExamScope account
-          </CardTitle>
+          <h1 className="text-2xl">
+            Create account
+          </h1>
 
           <CardDescription>
             Start organizing subjects and preparing smarter for your exams.

@@ -11,7 +11,6 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,9 +29,9 @@ export default function LoginPage() {
             <BrainCircuit className="size-6" />
           </div>
 
-          <CardTitle className="text-2xl">
+          <h1 className="text-2xl">
             Welcome back
-          </CardTitle>
+          </h1>
 
           <CardDescription>
             Sign in to continue your ExamScope AI study journey.
