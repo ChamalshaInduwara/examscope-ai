@@ -14,10 +14,12 @@ from app.schemas.rag import (
     RAGDifficulty,
     RAGMode,
     RetrievalResult,
+    StudyAssistantRequest,
+    StudyAssistantResult,
 )
 from app.services.document_extractor import SUPPORTED_EXTENSIONS, extract_document
 from app.services.generation_provider import GenerationProviderError
-from app.services.rag_service import generate_questions
+from app.services.rag_service import answer_study_question, generate_questions
 from app.services.retrieval_service import retrieve_relevant_chunks
 from app.services.text_chunker import chunk_document
 from app.services.text_cleaner import clean_document
@@ -164,6 +166,40 @@ async def generate_from_chunks(
         return await run_in_threadpool(
             generate_questions,
             request.documents,
+            request,
+        )
+    except GenerationProviderError as exc:
+        raise HTTPException(
+            exc.status_code,
+            str(exc),
+        ) from None
+
+
+@router.post(
+    "/answer-from-chunks",
+    response_model=StudyAssistantResult,
+    responses={
+        **ERROR_RESPONSES,
+        502: {
+            "model": ErrorResponse,
+            "description": "Invalid provider response",
+        },
+        503: {
+            "model": ErrorResponse,
+            "description": "Provider is not configured",
+        },
+        504: {
+            "model": ErrorResponse,
+            "description": "Provider timeout",
+        },
+    },
+)
+async def answer_from_chunks(
+    request: StudyAssistantRequest,
+):
+    try:
+        return await run_in_threadpool(
+            answer_study_question,
             request,
         )
     except GenerationProviderError as exc:

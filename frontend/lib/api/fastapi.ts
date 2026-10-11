@@ -178,6 +178,15 @@ export type RagGenerationResult = {
   reason: string | null;
 };
 
+export type StudyAssistantResult = {
+  status: "success" | "insufficient_evidence";
+  question: string;
+  answer: string | null;
+  retrieved_evidence: RagRetrievedEvidence[];
+  source_evidence_ids: string[];
+  reason: string | null;
+};
+
 const FASTAPI_BASE_URL =
   process.env.FASTAPI_BASE_URL;
 
@@ -438,6 +447,36 @@ export async function generateQuestionsFromChunksWithFastApi(input: {
         difficulty: input.difficulty,
         subject_name: input.subjectName ?? null,
         count: input.count ?? 5,
+        top_k: input.topK ?? 5,
+        minimum_relevance: input.minimumRelevance ?? 0.25,
+      }),
+    },
+  );
+}
+
+export async function answerStudyQuestionFromChunksWithFastApi(input: {
+  documents: RagChunkingResult[];
+  question: string;
+  subjectName?: string;
+  topK?: number;
+  minimumRelevance?: number;
+}) {
+  if (input.documents.length === 0 || input.documents.length > 3) {
+    throw new Error("Select between one and three processed documents.");
+  }
+
+  if (!input.question.trim()) {
+    throw new Error("Question cannot be blank.");
+  }
+
+  return fastApiRequest<StudyAssistantResult>(
+    "/api/v1/rag/answer-from-chunks",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        documents: input.documents,
+        question: input.question,
+        subject_name: input.subjectName ?? null,
         top_k: input.topK ?? 5,
         minimum_relevance: input.minimumRelevance ?? 0.25,
       }),
