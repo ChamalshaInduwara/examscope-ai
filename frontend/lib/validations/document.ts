@@ -65,7 +65,13 @@ export const documentMetadataSchema = z.object({
 });
 
 export function getFileExtension(fileName: string) {
-  return fileName.split(".").pop()?.toLowerCase() ?? "";
+  const lastDotIndex = fileName.lastIndexOf(".");
+
+  if (lastDotIndex === -1 || lastDotIndex === fileName.length - 1) {
+    return "";
+  }
+
+  return fileName.slice(lastDotIndex + 1).toLowerCase();
 }
 
 export function validateDocumentFile(file: File) {
