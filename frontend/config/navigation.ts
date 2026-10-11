@@ -7,6 +7,7 @@ import {
   FolderOpen,
   GraduationCap,
   LayoutDashboard,
+  MessageCircleQuestion,
   Upload,
 } from "lucide-react";
 
@@ -40,6 +41,11 @@ export const dashboardNavigation = [
     title: "Generate Questions",
     href: "/generate",
     icon: FileQuestion,
+  },
+  {
+    title: "Study Assistant",
+    href: "/study-assistant",
+    icon: MessageCircleQuestion,
   },
   {
     title: "Mock Exams",

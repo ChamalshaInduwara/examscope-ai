@@ -51,6 +51,56 @@ class GeneratedModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+class StudyAssistantRequest(BaseModel):
+    documents: list[ChunkingResult] = Field(
+        min_length=1,
+        max_length=3,
+    )
+    question: Annotated[NonBlank, Field(max_length=1000)]
+    subject_name: Annotated[str, Field(max_length=200)] | None = None
+    top_k: int = Field(default=5, ge=1, le=20)
+    minimum_relevance: float = Field(default=0.25, ge=0, le=1)
+
+
+class StudyAssistantProviderResult(GeneratedModel):
+    status: Literal[
+        "success",
+        "insufficient_evidence",
+    ]
+    answer: NonBlank | None = None
+    source_evidence_ids: list[NonBlank] = Field(
+        default_factory=list,
+    )
+    reason: NonBlank | None = None
+
+    @model_validator(mode="after")
+    def validate_status(self):
+        if self.status == "success":
+            if self.answer is None:
+                raise ValueError(
+                    "Successful responses require an answer"
+                )
+            if not self.source_evidence_ids:
+                raise ValueError(
+                    "Successful responses require evidence citations"
+                )
+        return self
+
+
+class StudyAssistantResult(BaseModel):
+    status: Literal[
+        "success",
+        "insufficient_evidence",
+    ]
+    question: str
+    answer: str | None = None
+    retrieved_evidence: list[RetrievedEvidence]
+    source_evidence_ids: list[str] = Field(
+        default_factory=list,
+    )
+    reason: str | None = None
+
+
 class QuestionBase(GeneratedModel):
     question_text: NonBlank
     difficulty: RAGDifficulty
