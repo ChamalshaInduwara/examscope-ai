@@ -55,7 +55,7 @@ export function MockExamCard({
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <CardTitle className="text-lg">
               {exam.title}
@@ -103,26 +103,28 @@ export function MockExamCard({
           </p>
         ) : null}
 
-        {exam.status === "DRAFT" ? (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleMarkReady}
-            disabled={isUpdating}
-          >
-            {isUpdating
-              ? "Updating..."
-              : "Mark Ready"}
-          </Button>
-        ) : null}
+        <div className="flex flex-wrap gap-2 pt-2">
+          {exam.status === "DRAFT" ? (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleMarkReady}
+              disabled={isUpdating}
+            >
+              {isUpdating
+                ? "Updating..."
+                : "Mark Ready"}
+            </Button>
+          ) : null}
 
-        <Button
-          variant="outline"
-          nativeButton={false}
-          render={<Link href={`/mock-exams/${exam.id}`} />}
-        >
-          Open Exam
-        </Button>
+          <Button
+            variant="outline"
+            nativeButton={false}
+            render={<Link href={`/mock-exams/${exam.id}`} />}
+          >
+            Open Exam
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

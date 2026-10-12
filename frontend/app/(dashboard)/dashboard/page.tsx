@@ -158,7 +158,7 @@ export default async function DashboardPage() {
                       href={`/subjects/${subject.id}`}
                       className="block rounded-lg border p-4 transition-colors hover:bg-muted/40"
                     >
-                      <div className="flex items-start justify-between gap-4">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                         <div className="min-w-0">
                           <p className="font-medium">
                             {subject.name}
@@ -171,7 +171,7 @@ export default async function DashboardPage() {
                           ) : null}
                         </div>
 
-                        <span className="shrink-0 text-xs text-muted-foreground">
+                        <span className="text-xs text-muted-foreground sm:shrink-0">
                           {formatRelativeTime(
                             subject.updatedAt,
                           )}
@@ -250,7 +250,7 @@ export default async function DashboardPage() {
                         </div>
 
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-start justify-between gap-4">
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                             <div className="min-w-0">
                               <p className="text-sm font-medium">
                                 {label}
@@ -267,7 +267,7 @@ export default async function DashboardPage() {
                               </p>
                             </div>
 
-                            <span className="shrink-0 text-xs text-muted-foreground">
+                            <span className="text-xs text-muted-foreground sm:shrink-0">
                               {formatRelativeTime(
                                 activity.createdAt,
                               )}

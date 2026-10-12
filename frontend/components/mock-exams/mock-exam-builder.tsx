@@ -477,7 +477,7 @@ export function MockExamBuilder({
                 return (
                   <label
                     key={question.id}
-                    className="flex cursor-pointer items-start gap-3 rounded-md border p-4"
+                    className="flex cursor-pointer items-start gap-3 rounded-md border p-4 transition-colors focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
                   >
                     <input
                       type="checkbox"
@@ -527,13 +527,13 @@ export function MockExamBuilder({
       </div>
 
       {error ? (
-        <p className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-destructive">
           {error}
         </p>
       ) : null}
 
       {success ? (
-        <p className="text-sm text-muted-foreground">
+        <p role="status" className="text-sm text-muted-foreground">
           {success}
         </p>
       ) : null}
