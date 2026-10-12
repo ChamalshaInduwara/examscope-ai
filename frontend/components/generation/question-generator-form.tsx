@@ -316,7 +316,11 @@ export function QuestionGeneratorForm({
         />
       </div>
 
-      {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="text-sm text-destructive">
+          {error}
+        </p>
+      ) : null}
 
       {result ? (
         <div className="space-y-4">
@@ -392,46 +396,46 @@ export function QuestionGeneratorForm({
                       ))}
                     </div>
 
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="mt-4"
-                      onClick={() => toggleAnswer(index)}
-                    >
-                      {isRevealed ? (
-                        <>
-                          <EyeOff className="size-4" />
-                          Hide Answer
-                        </>
-                      ) : (
-                        <>
-                          <Eye className="size-4" />
-                          Show Answer
-                        </>
-                      )}
-                    </Button>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => toggleAnswer(index)}
+                      >
+                        {isRevealed ? (
+                          <>
+                            <EyeOff className="size-4" />
+                            Hide Answer
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="size-4" />
+                            Show Answer
+                          </>
+                        )}
+                      </Button>
 
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="mt-4 ml-2"
-                      disabled={
-                        savingRevisionIndex === index ||
-                        savedRevisionIndexes.includes(index)
-                      }
-                      onClick={() =>
-                        handleSaveForRevision(
-                          question.generatedQuestionId,
-                          index,
-                        )
-                      }
-                    >
-                      {savingRevisionIndex === index
-                        ? "Saving..."
-                        : savedRevisionIndexes.includes(index)
-                          ? "Saved for Revision"
-                          : "Save for Revision"}
-                    </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={
+                          savingRevisionIndex === index ||
+                          savedRevisionIndexes.includes(index)
+                        }
+                        onClick={() =>
+                          handleSaveForRevision(
+                            question.generatedQuestionId,
+                            index,
+                          )
+                        }
+                      >
+                        {savingRevisionIndex === index
+                          ? "Saving..."
+                          : savedRevisionIndexes.includes(index)
+                            ? "Saved for Revision"
+                            : "Save for Revision"}
+                      </Button>
+                    </div>
 
                     {isRevealed ? (
                       <div className="mt-4 space-y-4 rounded-md border bg-muted/30 p-4">
@@ -568,46 +572,46 @@ export function QuestionGeneratorForm({
                       </div>
                     ) : null}
 
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="mt-4"
-                      onClick={() => toggleAnswer(index)}
-                    >
-                      {isRevealed ? (
-                        <>
-                          <EyeOff className="size-4" />
-                          Hide Answer
-                        </>
-                      ) : (
-                        <>
-                          <Eye className="size-4" />
-                          Show Answer
-                        </>
-                      )}
-                    </Button>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => toggleAnswer(index)}
+                      >
+                        {isRevealed ? (
+                          <>
+                            <EyeOff className="size-4" />
+                            Hide Answer
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="size-4" />
+                            Show Answer
+                          </>
+                        )}
+                      </Button>
 
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="mt-4 ml-2"
-                      disabled={
-                        savingRevisionIndex === index ||
-                        savedRevisionIndexes.includes(index)
-                      }
-                      onClick={() =>
-                        handleSaveForRevision(
-                          question.generatedQuestionId,
-                          index,
-                        )
-                      }
-                    >
-                      {savingRevisionIndex === index
-                        ? "Saving..."
-                        : savedRevisionIndexes.includes(index)
-                          ? "Saved for Revision"
-                          : "Save for Revision"}
-                    </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={
+                          savingRevisionIndex === index ||
+                          savedRevisionIndexes.includes(index)
+                        }
+                        onClick={() =>
+                          handleSaveForRevision(
+                            question.generatedQuestionId,
+                            index,
+                          )
+                        }
+                      >
+                        {savingRevisionIndex === index
+                          ? "Saving..."
+                          : savedRevisionIndexes.includes(index)
+                            ? "Saved for Revision"
+                            : "Save for Revision"}
+                      </Button>
+                    </div>
 
                     {isRevealed ? (
                       <div className="mt-4 space-y-5 rounded-md border bg-muted/30 p-4">
@@ -751,46 +755,46 @@ export function QuestionGeneratorForm({
                       {question.question_text}
                     </p>
 
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="mt-4"
-                      onClick={() => toggleAnswer(index)}
-                    >
-                      {isRevealed ? (
-                        <>
-                          <EyeOff className="size-4" />
-                          Hide Answer
-                        </>
-                      ) : (
-                        <>
-                          <Eye className="size-4" />
-                          Show Answer
-                        </>
-                      )}
-                    </Button>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => toggleAnswer(index)}
+                      >
+                        {isRevealed ? (
+                          <>
+                            <EyeOff className="size-4" />
+                            Hide Answer
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="size-4" />
+                            Show Answer
+                          </>
+                        )}
+                      </Button>
 
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="mt-4 ml-2"
-                      disabled={
-                        savingRevisionIndex === index ||
-                        savedRevisionIndexes.includes(index)
-                      }
-                      onClick={() =>
-                        handleSaveForRevision(
-                          question.generatedQuestionId,
-                          index,
-                        )
-                      }
-                    >
-                      {savingRevisionIndex === index
-                        ? "Saving..."
-                        : savedRevisionIndexes.includes(index)
-                          ? "Saved for Revision"
-                          : "Save for Revision"}
-                    </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={
+                          savingRevisionIndex === index ||
+                          savedRevisionIndexes.includes(index)
+                        }
+                        onClick={() =>
+                          handleSaveForRevision(
+                            question.generatedQuestionId,
+                            index,
+                          )
+                        }
+                      >
+                        {savingRevisionIndex === index
+                          ? "Saving..."
+                          : savedRevisionIndexes.includes(index)
+                            ? "Saved for Revision"
+                            : "Save for Revision"}
+                      </Button>
+                    </div>
 
                     {isRevealed ? (
                       <div className="mt-4 space-y-5 rounded-md border bg-muted/30 p-4">

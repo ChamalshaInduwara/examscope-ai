@@ -73,7 +73,7 @@ export default async function SubjectsPage() {
               <Link
                 key={subject.id}
                 href={`/subjects/${subject.id}`}
-                className="block"
+                className="block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <Card className="h-full transition-shadow hover:shadow-md">
                   <CardHeader>

@@ -51,6 +51,10 @@ export function UploadDocumentForm({
             name="subjectId"
             defaultValue={defaultSubjectId ?? ""}
             required
+            aria-invalid={Boolean(state.errors?.subjectId)}
+            aria-describedby={
+              state.errors?.subjectId ? "subjectId-error" : undefined
+            }
             className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
           >
             <option value="">Select a subject</option>
@@ -64,7 +68,7 @@ export function UploadDocumentForm({
           </select>
 
           {state.errors?.subjectId ? (
-            <p className="text-sm text-destructive">
+            <p id="subjectId-error" className="text-sm text-destructive">
               {state.errors.subjectId[0]}
             </p>
           ) : null}
@@ -78,6 +82,10 @@ export function UploadDocumentForm({
             name="documentType"
             defaultValue=""
             required
+            aria-invalid={Boolean(state.errors?.documentType)}
+            aria-describedby={
+              state.errors?.documentType ? "documentType-error" : undefined
+            }
             className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
           >
             <option value="">Select document type</option>
@@ -94,7 +102,7 @@ export function UploadDocumentForm({
           </select>
 
           {state.errors?.documentType ? (
-            <p className="text-sm text-destructive">
+            <p id="documentType-error" className="text-sm text-destructive">
               {state.errors.documentType[0]}
             </p>
           ) : null}
@@ -108,10 +116,16 @@ export function UploadDocumentForm({
             name="title"
             placeholder="e.g. Biology Past Paper 2025"
             required
+            aria-invalid={Boolean(state.errors?.title)}
+            aria-describedby={
+              state.errors?.title ? "title-error" : undefined
+            }
           />
 
           {state.errors?.title ? (
-            <p className="text-sm text-destructive">{state.errors.title[0]}</p>
+            <p id="title-error" className="text-sm text-destructive">
+              {state.errors.title[0]}
+            </p>
           ) : null}
         </div>
 
@@ -125,10 +139,16 @@ export function UploadDocumentForm({
             min="1900"
             max="2100"
             placeholder="e.g. 2025"
+            aria-invalid={Boolean(state.errors?.year)}
+            aria-describedby={
+              state.errors?.year ? "year-error" : undefined
+            }
           />
 
           {state.errors?.year ? (
-            <p className="text-sm text-destructive">{state.errors.year[0]}</p>
+            <p id="year-error" className="text-sm text-destructive">
+              {state.errors.year[0]}
+            </p>
           ) : null}
         </div>
 
@@ -141,6 +161,10 @@ export function UploadDocumentForm({
             type="file"
             accept=".pdf,.docx,.pptx,.txt"
             required
+            aria-invalid={Boolean(state.errors?.file)}
+            aria-describedby={
+              state.errors?.file ? "file-error" : undefined
+            }
           />
 
           <p className="text-xs text-muted-foreground">
@@ -148,7 +172,9 @@ export function UploadDocumentForm({
           </p>
 
           {state.errors?.file ? (
-            <p className="text-sm text-destructive">{state.errors.file[0]}</p>
+            <p id="file-error" className="text-sm text-destructive">
+              {state.errors.file[0]}
+            </p>
           ) : null}
         </div>
 
@@ -160,11 +186,15 @@ export function UploadDocumentForm({
             name="description"
             rows={4}
             placeholder="Optional notes about this document..."
+            aria-invalid={Boolean(state.errors?.description)}
+            aria-describedby={
+              state.errors?.description ? "description-error" : undefined
+            }
             className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
           />
 
           {state.errors?.description ? (
-            <p className="text-sm text-destructive">
+            <p id="description-error" className="text-sm text-destructive">
               {state.errors.description[0]}
             </p>
           ) : null}
