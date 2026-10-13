@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BrainCircuit } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -64,26 +64,36 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-10">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <BrainCircuit className="size-6" />
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4 py-12">
+      <div className="pointer-events-none absolute -top-40 left-1/2 size-96 -translate-x-1/2 rounded-full bg-[#0466c8]/15 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-0 right-0 size-80 rounded-full bg-[#0466c8]/10 blur-3xl" />
+
+      <Card className="relative w-full max-w-md border border-border/80 bg-card/90 shadow-[0_20px_50px_-15px_rgba(4,102,200,0.15)] backdrop-blur-md">
+        <CardHeader className="text-center pb-2">
+          <div className="mx-auto mb-3 flex size-16 items-center justify-center">
+            <Image
+              src="/logo.png"
+              alt="ExamScope AI"
+              width={64}
+              height={64}
+              className="size-16 object-contain drop-shadow-[0_0_16px_rgba(56,189,248,0.55)] transition-transform duration-300 hover:scale-105"
+              priority
+            />
           </div>
 
-          <h1 className="text-2xl">
+          <h1 className="text-2xl font-extrabold tracking-tight text-foreground">
             Create account
           </h1>
 
-          <CardDescription>
+          <CardDescription className="text-sm">
             Start organizing subjects and preparing smarter for your exams.
           </CardDescription>
         </CardHeader>
 
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-5">
+        <CardContent className="pt-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Full name</Label>
+              <Label htmlFor="name" className="font-semibold text-xs tracking-wide">Full name</Label>
 
               <Input
                 id="name"
@@ -92,11 +102,12 @@ export default function RegisterPage() {
                 value={name}
                 onChange={(event) => setName(event.target.value)}
                 required
+                className="h-10"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="font-semibold text-xs tracking-wide">Email</Label>
 
               <Input
                 id="email"
@@ -105,11 +116,12 @@ export default function RegisterPage() {
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 required
+                className="h-10"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="font-semibold text-xs tracking-wide">Password</Label>
 
               <Input
                 id="password"
@@ -119,11 +131,12 @@ export default function RegisterPage() {
                 onChange={(event) => setPassword(event.target.value)}
                 required
                 minLength={8}
+                className="h-10"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">
+              <Label htmlFor="confirmPassword" className="font-semibold text-xs tracking-wide">
                 Confirm password
               </Label>
 
@@ -137,6 +150,7 @@ export default function RegisterPage() {
                 }
                 required
                 minLength={8}
+                className="h-10"
               />
             </div>
 
@@ -151,7 +165,7 @@ export default function RegisterPage() {
 
             <Button
               type="submit"
-              className="w-full"
+              className="w-full h-10 font-semibold shadow-md mt-2"
               disabled={isSubmitting}
             >
               {isSubmitting ? "Creating account..." : "Create account"}
@@ -162,7 +176,7 @@ export default function RegisterPage() {
             Already have an account?{" "}
             <Link
               href="/login"
-              className="font-medium text-foreground underline underline-offset-4"
+              className="font-semibold text-[#0466c8] hover:underline underline-offset-4 transition-colors"
             >
               Sign in
             </Link>
