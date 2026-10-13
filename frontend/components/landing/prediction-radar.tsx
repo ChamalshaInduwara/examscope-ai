@@ -1,6 +1,6 @@
 "use client";
 
-import { Target, Cpu, TrendingUp, BookOpen, Search, CheckCircle, Crosshair, ArrowRight } from "lucide-react";
+import { Target, Cpu, TrendingUp, BookOpen, Crosshair, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 

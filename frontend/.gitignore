@@ -19,6 +19,9 @@
 /.next/
 /out/
 
+# accidental nested frontend/build artifacts
+/frontend/
+
 # production
 /build
 

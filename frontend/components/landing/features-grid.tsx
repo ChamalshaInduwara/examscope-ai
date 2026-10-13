@@ -6,7 +6,6 @@ import {
   BarChart3,
   Sparkles,
   BookMarked,
-  ShieldAlert,
 } from "lucide-react";
 
 const FEATURES = [
