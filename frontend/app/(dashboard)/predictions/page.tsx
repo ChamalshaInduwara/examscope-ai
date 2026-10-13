@@ -17,6 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BacktestPanel } from "@/components/predictions/backtest-panel";
 import { generatePredictions } from "@/lib/actions/predictions";
@@ -133,52 +134,58 @@ export default async function PredictionsPage({
         </p>
       </div>
 
-      <form method="get" className="space-y-2">
-        <label htmlFor="subject" className="text-sm font-medium">
-          Subject
-        </label>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <form method="get" className="flex flex-col gap-2 sm:flex-row sm:items-end">
+          <div className="space-y-1.5">
+            <label htmlFor="subject" className="text-xs font-semibold tracking-wide text-foreground">
+              Filter by Subject
+            </label>
 
-        <select
-          id="subject"
-          name="subject"
-          defaultValue={selectedSubjectId ?? ""}
-          className="h-10 w-full rounded-md border bg-background px-3 text-sm sm:max-w-sm"
-        >
-          <option value="">All subjects</option>
+            <select
+              id="subject"
+              name="subject"
+              defaultValue={selectedSubjectId ?? ""}
+              className="h-9 w-full rounded-lg border border-input bg-background/50 px-3 text-sm transition-all duration-200 outline-none hover:border-slate-400 focus-visible:border-[#0466c8] focus-visible:ring-3 focus-visible:ring-[#0466c8]/25 sm:w-64"
+            >
+              <option value="">All subjects</option>
 
-          {subjects.map((subject) => (
-            <option key={subject.id} value={subject.id}>
-              {subject.name}
-              {subject.code ? ` (${subject.code})` : ""}
-            </option>
-          ))}
-        </select>
+              {subjects.map((subject) => (
+                <option key={subject.id} value={subject.id}>
+                  {subject.name}
+                  {subject.code ? ` (${subject.code})` : ""}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <button
-          type="submit"
-          className="ml-2 h-10 rounded-md border px-4 text-sm"
-        >
-          Apply
-        </button>
-      </form>
-
-      {selectedSubjectId ? (
-        <form action={generatePredictions}>
-          <input type="hidden" name="subjectId" value={selectedSubjectId} />
-
-          <button
+          <Button
             type="submit"
-            className="inline-flex h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground"
+            variant="outline"
+            size="sm"
+            className="h-9"
           >
-            <WandSparkles className="size-4" />
-            Generate Predictions
-          </button>
+            Filter
+          </Button>
         </form>
-      ) : (
-        <p className="text-sm text-muted-foreground">
-          Select a subject to generate predictions.
-        </p>
-      )}
+
+        {selectedSubjectId ? (
+          <form action={generatePredictions}>
+            <input type="hidden" name="subjectId" value={selectedSubjectId} />
+
+            <Button
+              type="submit"
+              className="h-9 shadow-md"
+            >
+              <WandSparkles className="size-4" />
+              Generate Predictions
+            </Button>
+          </form>
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            Select a subject to generate AI exam forecasts.
+          </p>
+        )}
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>

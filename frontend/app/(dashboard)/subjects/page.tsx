@@ -51,18 +51,25 @@ export default async function SubjectsPage() {
       </Card>
 
       <div>
-        <h2 className="text-xl font-semibold">My Subjects</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold tracking-tight">My Subjects</h2>
+          <span className="rounded-full bg-[#0466c8]/10 px-3 py-1 text-xs font-semibold text-[#0466c8]">
+            {subjects.length} {subjects.length === 1 ? "Subject" : "Subjects"}
+          </span>
+        </div>
 
         {subjects.length === 0 ? (
-          <Card className="mt-4">
+          <Card className="mt-4 border-dashed">
             <CardContent className="flex min-h-48 items-center justify-center">
               <div className="text-center">
-                <BookOpen className="mx-auto size-10 text-muted-foreground" />
+                <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-[#0466c8]/10 text-[#0466c8]">
+                  <BookOpen className="size-6" />
+                </div>
 
-                <p className="mt-4 font-medium">No subjects yet</p>
+                <p className="mt-4 text-base font-semibold">No subjects yet</p>
 
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Create your first subject using the form above.
+                <p className="mt-1 text-sm text-muted-foreground max-w-sm">
+                  Create your first subject using the form above to start uploading syllabus documents and exam papers.
                 </p>
               </div>
             </CardContent>
@@ -73,44 +80,48 @@ export default async function SubjectsPage() {
               <Link
                 key={subject.id}
                 href={`/subjects/${subject.id}`}
-                className="block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="group block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0466c8]"
               >
-                <Card className="h-full transition-shadow hover:shadow-md">
-                  <CardHeader>
-                    <CardTitle>{subject.name}</CardTitle>
-
-                    <CardDescription>
-                      {subject.code || "No subject code"}
-                    </CardDescription>
+                <Card className="h-full border border-border/80 transition-all duration-300 group-hover:-translate-y-1.5 group-hover:border-[#0466c8]/50 group-hover:shadow-[0_12px_28px_-8px_rgba(4,102,200,0.2)]">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <CardTitle className="text-lg font-bold group-hover:text-[#0466c8] transition-colors">
+                        {subject.name}
+                      </CardTitle>
+                      {subject.code && (
+                        <span className="rounded-md bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground">
+                          {subject.code}
+                        </span>
+                      )}
+                    </div>
                   </CardHeader>
 
-                  <CardContent className="space-y-2 text-sm">
-                    {subject.educationLevel ? (
-                      <p>
-                        <span className="font-medium">Level:</span>{" "}
-                        {subject.educationLevel}
-                      </p>
-                    ) : null}
+                  <CardContent className="space-y-3 text-sm">
+                    <div className="flex flex-wrap gap-1.5">
+                      {subject.educationLevel && (
+                        <span className="rounded-md bg-[#0466c8]/10 px-2 py-0.5 text-xs font-medium text-[#0466c8]">
+                          {subject.educationLevel}
+                        </span>
+                      )}
 
-                    {subject.institution ? (
-                      <p>
-                        <span className="font-medium">Institution:</span>{" "}
-                        {subject.institution}
-                      </p>
-                    ) : null}
+                      {subject.examType && (
+                        <span className="rounded-md border border-border bg-card px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                          {subject.examType}
+                        </span>
+                      )}
 
-                    {subject.examType ? (
-                      <p>
-                        <span className="font-medium">Exam:</span>{" "}
-                        {subject.examType}
-                      </p>
-                    ) : null}
+                      {subject.institution && (
+                        <span className="rounded-md border border-border bg-card px-2 py-0.5 text-xs font-medium text-muted-foreground truncate max-w-[180px]">
+                          {subject.institution}
+                        </span>
+                      )}
+                    </div>
 
-                    {subject.description ? (
-                      <p className="pt-2 text-muted-foreground">
+                    {subject.description && (
+                      <p className="line-clamp-2 text-xs text-muted-foreground leading-relaxed">
                         {subject.description}
                       </p>
-                    ) : null}
+                    )}
                   </CardContent>
                 </Card>
               </Link>

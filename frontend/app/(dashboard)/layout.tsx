@@ -16,7 +16,7 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-background bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(4,102,200,0.07),transparent)]">
       <div className="flex min-h-screen">
         <Sidebar />
 
