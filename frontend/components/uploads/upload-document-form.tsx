@@ -55,7 +55,7 @@ export function UploadDocumentForm({
             aria-describedby={
               state.errors?.subjectId ? "subjectId-error" : undefined
             }
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+            className="flex h-9 w-full rounded-lg border border-input bg-background/50 px-3 py-1.5 text-sm transition-all duration-200 outline-none hover:border-slate-400 focus-visible:border-[#0466c8] focus-visible:ring-3 focus-visible:ring-[#0466c8]/25"
           >
             <option value="">Select a subject</option>
 
@@ -86,7 +86,7 @@ export function UploadDocumentForm({
             aria-describedby={
               state.errors?.documentType ? "documentType-error" : undefined
             }
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+            className="flex h-9 w-full rounded-lg border border-input bg-background/50 px-3 py-1.5 text-sm transition-all duration-200 outline-none hover:border-slate-400 focus-visible:border-[#0466c8] focus-visible:ring-3 focus-visible:ring-[#0466c8]/25"
           >
             <option value="">Select document type</option>
 
@@ -190,7 +190,7 @@ export function UploadDocumentForm({
             aria-describedby={
               state.errors?.description ? "description-error" : undefined
             }
-            className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+            className="flex w-full rounded-lg border border-input bg-background/50 px-3 py-2 text-sm transition-all duration-200 outline-none placeholder:text-muted-foreground hover:border-slate-400 focus-visible:border-[#0466c8] focus-visible:ring-3 focus-visible:ring-[#0466c8]/25"
           />
 
           {state.errors?.description ? (

@@ -22,16 +22,16 @@ export function DocumentStatusBadge({
 
   const classNames: Record<ProcessingStatus, string> = {
     PENDING:
-      "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400",
+      "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400 font-medium",
 
     PROCESSING:
-      "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400",
+      "border-[#0466c8]/40 bg-[#0466c8]/10 text-[#0466c8] dark:text-[#388bfd] font-semibold animate-pulse",
 
     COMPLETED:
-      "border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-400",
+      "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-medium",
 
     FAILED:
-      "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-400",
+      "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-400 font-medium",
   };
 
   return (
