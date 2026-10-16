@@ -529,7 +529,7 @@ export async function processDocument(formData: FormData) {
       },
       {
         maxWait: 5000,
-        timeout: 20000,
+        timeout: 60000,
       },
     );
 
