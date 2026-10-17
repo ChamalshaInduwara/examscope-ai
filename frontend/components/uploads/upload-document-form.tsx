@@ -1,10 +1,11 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useRef, useState } from "react";
 import { FileUp, Loader2 } from "lucide-react";
 
 import {
-  uploadDocument,
+  completeDocumentUpload,
+  prepareDocumentUpload,
   type UploadDocumentState,
 } from "@/lib/actions/documents";
 import { Button } from "@/components/ui/button";
@@ -22,26 +23,135 @@ type UploadDocumentFormProps = {
   defaultSubjectId?: string;
 };
 
-const initialState: UploadDocumentState = {};
-
 export function UploadDocumentForm({
   subjects,
   defaultSubjectId,
 }: UploadDocumentFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
-  const [state, formAction, isPending] = useActionState(
-    uploadDocument,
-    initialState,
-  );
+  const [state, setState] = useState<UploadDocumentState>({});
+  const [isPending, setIsPending] = useState(false);
 
-  useEffect(() => {
-    if (state.success) {
-      formRef.current?.reset();
+  async function handleSubmit(
+    event: React.FormEvent<HTMLFormElement>,
+  ) {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+
+    const fileValue = formData.get("file");
+
+    if (!(fileValue instanceof File) || fileValue.size === 0) {
+      setState({
+        success: false,
+        message: "Please select a valid file.",
+        errors: {
+          file: ["Please select a file."],
+        },
+      });
+
+      return;
     }
-  }, [state.success]);
+
+    const file = fileValue;
+
+    setIsPending(true);
+    setState({});
+
+    try {
+      const subjectId = String(
+        formData.get("subjectId") ?? "",
+      );
+
+      const prepared = await prepareDocumentUpload({
+        subjectId,
+        fileName: file.name,
+        fileSize: file.size,
+        mimeType:
+          file.type || "application/octet-stream",
+      });
+
+      if (!prepared.success) {
+        setState({
+          success: false,
+          message: prepared.message,
+        });
+
+        return;
+      }
+
+      const uploadResponse = await fetch(
+        prepared.uploadUrl,
+        {
+          method: "PUT",
+          body: file,
+          headers: {
+            "Content-Type":
+              file.type || "application/octet-stream",
+          },
+        },
+      );
+
+      if (!uploadResponse.ok) {
+        throw new Error(
+          `File upload failed with status ${uploadResponse.status}.`,
+        );
+      }
+
+      const completed = await completeDocumentUpload({
+        subjectId,
+
+        title: String(
+          formData.get("title") ?? "",
+        ),
+
+        documentType: String(
+          formData.get("documentType") ?? "",
+        ),
+
+        year:
+          String(formData.get("year") ?? "") ||
+          undefined,
+
+        description:
+          String(formData.get("description") ?? "") ||
+          undefined,
+
+        fileName: file.name,
+        fileSize: file.size,
+
+        mimeType:
+          file.type || "application/octet-stream",
+
+        storageKey: prepared.storageKey,
+      });
+
+      setState(completed);
+
+      if (completed.success) {
+        formRef.current?.reset();
+      }
+    } catch (error) {
+      console.error("Document upload failed:", error);
+
+      setState({
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unable to upload the document.",
+      });
+    } finally {
+      setIsPending(false);
+    }
+  }
 
   return (
-    <form ref={formRef} action={formAction} className="space-y-6">
+    <form
+      ref={formRef}
+      onSubmit={handleSubmit}
+      className="space-y-6"
+    >
       <div className="grid gap-5 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="subjectId">Subject</Label>

@@ -74,6 +74,46 @@ export function getFileExtension(fileName: string) {
   return fileName.slice(lastDotIndex + 1).toLowerCase();
 }
 
+export function validateDocumentUploadMetadata(input: {
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+}) {
+  if (!input.fileName || input.fileSize <= 0) {
+    return "Please select a file.";
+  }
+
+  if (input.fileSize > MAX_UPLOAD_SIZE) {
+    return "File size must not exceed 20 MB.";
+  }
+
+  const extension = getFileExtension(input.fileName);
+
+  if (
+    !ALLOWED_FILE_EXTENSIONS.includes(
+      extension as (typeof ALLOWED_FILE_EXTENSIONS)[number]
+    )
+  ) {
+    return "Only PDF, DOCX, PPTX and TXT files are allowed.";
+  }
+
+  const expectedMimeTypes =
+    MIME_TYPES_BY_EXTENSION[
+      extension as keyof typeof MIME_TYPES_BY_EXTENSION
+    ];
+
+  if (
+    input.mimeType &&
+    !expectedMimeTypes.some(
+      (mimeType) => mimeType === input.mimeType
+    )
+  ) {
+    return "The file extension does not match the detected file type.";
+  }
+
+  return null;
+}
+
 export function validateDocumentFile(file: File) {
   if (!file || file.size === 0) {
     return "Please select a file.";
