@@ -5,8 +5,10 @@ import { randomUUID } from "node:crypto";
 import {
   DeleteObjectCommand,
   GetObjectCommand,
+  HeadObjectCommand,
   PutObjectCommand,
 } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { revalidatePath } from "next/cache";
 
 import { Prisma } from "@/app/generated/prisma/client";
@@ -15,7 +17,7 @@ import { prisma } from "@/lib/db/prisma";
 import {
   documentMetadataSchema,
   getFileExtension,
-  validateDocumentFile,
+  validateDocumentUploadMetadata,
 } from "@/lib/validations/document";
 import { s3, S3_BUCKET_NAME } from "@/lib/storage/s3";
 import {
@@ -44,6 +46,248 @@ function sanitizeFileName(fileName: string) {
     .replace(/[^a-zA-Z0-9._-]/g, "-")
     .replace(/-+/g, "-")
     .toLowerCase();
+}
+
+type PrepareDocumentUploadInput = {
+  subjectId: string;
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+};
+
+type PrepareDocumentUploadResult =
+  | {
+      success: true;
+      uploadUrl: string;
+      storageKey: string;
+    }
+  | {
+      success: false;
+      message: string;
+    };
+
+export async function prepareDocumentUpload(
+  input: PrepareDocumentUploadInput,
+): Promise<PrepareDocumentUploadResult> {
+  const user = await requireUser();
+
+  const fileError = validateDocumentUploadMetadata({
+    fileName: input.fileName,
+    fileSize: input.fileSize,
+    mimeType: input.mimeType,
+  });
+
+  if (fileError) {
+    return {
+      success: false,
+      message: fileError,
+    };
+  }
+
+  const subject = await prisma.subject.findFirst({
+    where: {
+      id: input.subjectId,
+      userId: user.id,
+      archived: false,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!subject) {
+    return {
+      success: false,
+      message:
+        "The selected subject does not exist or you do not have permission to use it.",
+    };
+  }
+
+  const safeFileName = sanitizeFileName(input.fileName);
+
+  const storageKey = [
+    "users",
+    user.id,
+    "subjects",
+    subject.id,
+    "documents",
+    `${randomUUID()}-${safeFileName}`,
+  ].join("/");
+
+  try {
+    const command = new PutObjectCommand({
+      Bucket: S3_BUCKET_NAME,
+      Key: storageKey,
+      ContentType: input.mimeType || "application/octet-stream",
+    });
+
+    const uploadUrl = await getSignedUrl(s3, command, {
+      expiresIn: 300,
+    });
+
+    return {
+      success: true,
+      uploadUrl,
+      storageKey,
+    };
+  } catch (error) {
+    console.error("Failed to prepare document upload:", error);
+
+    return {
+      success: false,
+      message: "Unable to prepare the document upload.",
+    };
+  }
+}
+
+type CompleteDocumentUploadInput = {
+  subjectId: string;
+  title: string;
+  documentType: string;
+  year?: string;
+  description?: string;
+
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  storageKey: string;
+};
+
+export async function completeDocumentUpload(
+  input: CompleteDocumentUploadInput,
+): Promise<UploadDocumentState> {
+  const user = await requireUser();
+
+  const metadataResult = documentMetadataSchema.safeParse({
+    subjectId: input.subjectId,
+    title: input.title,
+    documentType: input.documentType,
+    year: input.year || undefined,
+    description: input.description || undefined,
+  });
+
+  if (!metadataResult.success) {
+    return {
+      success: false,
+      message: "Please check the document details.",
+      errors: metadataResult.error.flatten().fieldErrors,
+    };
+  }
+
+  const fileError = validateDocumentUploadMetadata({
+    fileName: input.fileName,
+    fileSize: input.fileSize,
+    mimeType: input.mimeType,
+  });
+
+  if (fileError) {
+    return {
+      success: false,
+      message: "The selected file cannot be uploaded.",
+      errors: {
+        file: [fileError],
+      },
+    };
+  }
+
+  const subject = await prisma.subject.findFirst({
+    where: {
+      id: metadataResult.data.subjectId,
+      userId: user.id,
+      archived: false,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!subject) {
+    return {
+      success: false,
+      message:
+        "The selected subject does not exist or you do not have permission to use it.",
+      errors: {
+        subjectId: ["Invalid subject."],
+      },
+    };
+  }
+
+  const expectedPrefix = [
+    "users",
+    user.id,
+    "subjects",
+    subject.id,
+    "documents",
+    "",
+  ].join("/");
+
+  if (!input.storageKey.startsWith(expectedPrefix)) {
+    return {
+      success: false,
+      message: "Invalid uploaded file.",
+    };
+  }
+
+  try {
+    const storedObject = await s3.send(
+      new HeadObjectCommand({
+        Bucket: S3_BUCKET_NAME,
+        Key: input.storageKey,
+      }),
+    );
+
+    if (
+      typeof storedObject.ContentLength === "number" &&
+      storedObject.ContentLength !== input.fileSize
+    ) {
+      return {
+        success: false,
+        message: "Uploaded file size does not match the selected file.",
+      };
+    }
+
+    const extension = getFileExtension(input.fileName);
+
+    const document = await prisma.document.create({
+      data: {
+        title: metadataResult.data.title,
+
+        fileName: input.fileName,
+        fileType: extension,
+        mimeType: input.mimeType || null,
+        fileSize: input.fileSize,
+
+        documentType: metadataResult.data.documentType,
+        year: metadataResult.data.year,
+        description: metadataResult.data.description,
+
+        storageKey: input.storageKey,
+
+        processingStatus: "PENDING",
+
+        subjectId: subject.id,
+      },
+
+      select: {
+        id: true,
+      },
+    });
+
+    revalidatePath("/uploads");
+    revalidatePath(`/subjects/${subject.id}`);
+
+    return {
+      success: true,
+      message: `Document uploaded successfully. Processing is pending. Document ID: ${document.id}`,
+    };
+  } catch (error) {
+    console.error("Failed to complete document upload:", error);
+
+    return {
+      success: false,
+      message: "Unable to complete the document upload.",
+    };
+  }
 }
 
 export async function uploadDocument(
@@ -80,7 +324,11 @@ export async function uploadDocument(
     };
   }
 
-  const fileError = validateDocumentFile(file);
+  const fileError = validateDocumentUploadMetadata({
+    fileName: file.name,
+    fileSize: file.size,
+    mimeType: file.type,
+  });
 
   if (fileError) {
     return {
