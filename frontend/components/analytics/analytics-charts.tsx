@@ -46,7 +46,7 @@ export function QuestionTypeChart({
   }
 
   return (
-    <div className="h-72">
+    <div className="h-72 min-w-0">
       <ResponsiveContainer
         width="100%"
         height="100%"
@@ -101,7 +101,7 @@ export function QuestionsByYearChart({
   }
 
   return (
-    <div className="h-72">
+    <div className="h-72 min-w-0">
       <ResponsiveContainer
         width="100%"
         height="100%"

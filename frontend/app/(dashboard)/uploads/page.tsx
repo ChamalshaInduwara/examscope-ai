@@ -185,9 +185,9 @@ export default async function UploadsPage({ searchParams }: UploadsPageProps) {
                     </div>
 
                     <div className="min-w-0">
-                      <p className="truncate font-medium">{document.title}</p>
+                      <p className="break-words font-medium">{document.title}</p>
 
-                      <p className="mt-1 text-sm text-muted-foreground">
+                      <p className="mt-1 break-words text-sm text-muted-foreground">
                         {document.subject.name}
                         {document.subject.code
                           ? ` (${document.subject.code})`
@@ -213,7 +213,7 @@ export default async function UploadsPage({ searchParams }: UploadsPageProps) {
 
                       {document.processingStatus === "FAILED" &&
                       document.processingError ? (
-                        <p className="mt-2 text-sm text-destructive">
+                        <p className="mt-2 break-words text-sm text-destructive">
                           {document.processingError}
                         </p>
                       ) : null}

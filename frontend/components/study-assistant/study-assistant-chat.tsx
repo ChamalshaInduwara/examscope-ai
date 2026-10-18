@@ -175,7 +175,7 @@ export function StudyAssistantChat({
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
+    <div className="grid min-w-0 gap-6 lg:grid-cols-[320px_1fr]">
       <div className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="study-subject">
@@ -254,11 +254,11 @@ export function StudyAssistantChat({
                       />
 
                       <div className="min-w-0">
-                        <p className="text-sm font-medium">
+                        <p className="break-words text-sm font-medium">
                           {document.title}
                         </p>
 
-                        <p className="mt-1 truncate text-xs text-muted-foreground">
+                        <p className="mt-1 break-words text-xs text-muted-foreground">
                           {document.fileName}
                         </p>
                       </div>
@@ -271,7 +271,7 @@ export function StudyAssistantChat({
         </div>
       </div>
 
-      <div className="flex min-h-[560px] flex-col rounded-lg border">
+      <div className="flex min-h-[420px] min-w-0 flex-col rounded-lg border sm:min-h-[480px] lg:min-h-[560px]">
         <div className="flex-1 space-y-5 overflow-y-auto p-5">
           {chatTurns.length === 0 ? (
             <div className="flex h-full min-h-80 items-center justify-center">
@@ -298,11 +298,11 @@ export function StudyAssistantChat({
                   key={`${turn.question}-${index}`}
                   className="space-y-3"
                 >
-                  <div className="ml-auto max-w-[85%] rounded-lg bg-primary px-4 py-3 text-sm text-primary-foreground">
+                  <div className="ml-auto max-w-[85%] break-words rounded-lg bg-primary px-4 py-3 text-sm text-primary-foreground">
                     {turn.question}
                   </div>
 
-                  <div className="max-w-[92%] rounded-lg bg-muted px-4 py-4">
+                  <div className="max-w-[92%] break-words rounded-lg bg-muted px-4 py-4">
                     {turn.result.status ===
                     "success" ? (
                       <>
@@ -326,10 +326,10 @@ export function StudyAssistantChat({
                                     }
                                     className="rounded-md border bg-background"
                                   >
-                                    <summary className="flex cursor-pointer list-none items-center gap-2 p-3 text-xs font-medium">
+                                    <summary className="flex min-w-0 cursor-pointer list-none items-center gap-2 p-3 text-xs font-medium">
                                       <FileText className="size-3.5 shrink-0" />
 
-                                      <span className="truncate">
+                                      <span className="min-w-0 break-words">
                                         {evidence.filename}
                                       </span>
                                     </summary>

@@ -126,7 +126,7 @@ export default async function PredictionsPage({
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Predictions</h1>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Predictions</h1>
 
         <p className="mt-2 text-muted-foreground">
           Review AI-generated exam topic predictions based on historical

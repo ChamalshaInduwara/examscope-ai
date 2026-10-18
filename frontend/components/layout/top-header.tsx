@@ -25,10 +25,10 @@ export function TopHeader({
     .toUpperCase();
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border/80 bg-background/80 px-4 backdrop-blur-md md:px-6">
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b border-border/80 bg-background/80 px-2 backdrop-blur-md sm:gap-3 sm:px-4 md:px-6">
       <MobileSidebar />
 
-      <div className="min-w-0 lg:hidden">
+      <div className="min-w-0 flex-1 lg:hidden">
         <Link href="/dashboard" className="flex items-center gap-2">
           <Image
             src="/logo.png"
@@ -56,7 +56,7 @@ export function TopHeader({
         </div>
       </div>
 
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
         <Button
           variant="ghost"
           size="icon"
@@ -67,15 +67,15 @@ export function TopHeader({
           <span className="absolute top-2 right-2 size-2 rounded-full bg-[#0466c8] shadow-[0_0_6px_#0466c8]" />
         </Button>
 
-        <div className="flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/30 py-1 pl-1 pr-2 transition-colors hover:border-[#0466c8]/30 sm:gap-3 sm:pr-3">
+        <div className="flex min-w-0 items-center gap-1 rounded-full border border-border/60 bg-muted/30 py-1 pl-1 pr-1 transition-colors hover:border-[#0466c8]/30 sm:gap-3 sm:pr-3">
           <Avatar className="size-7.5 ring-2 ring-[#0466c8]/30 transition-all hover:ring-[#0466c8]">
             <AvatarFallback className="bg-gradient-to-br from-[#0466c8] to-[#023e7d] text-[11px] font-bold text-white">
               {initials || "ST"}
             </AvatarFallback>
           </Avatar>
 
-          <div className="hidden text-left sm:block md:block">
-            <p className="text-xs font-semibold leading-tight text-foreground">{name}</p>
+          <div className="hidden min-w-0 text-left sm:block md:block">
+            <p className="max-w-[100px] truncate text-xs font-semibold leading-tight text-foreground md:max-w-[140px]">{name}</p>
             <p className="text-[10px] text-muted-foreground truncate max-w-[100px] md:max-w-[140px]">
               {email}
             </p>

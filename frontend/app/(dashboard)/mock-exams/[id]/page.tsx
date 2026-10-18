@@ -216,8 +216,8 @@ export default async function MockExamPage({
         </Button>
 
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">
+          <div className="min-w-0">
+            <h1 className="break-words text-2xl font-bold tracking-tight sm:text-3xl">
               {exam.title}
             </h1>
             <p className="mt-2 text-muted-foreground">

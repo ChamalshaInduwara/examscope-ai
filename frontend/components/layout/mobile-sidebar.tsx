@@ -35,7 +35,7 @@ export function MobileSidebar() {
         <Menu className="size-5" />
       </SheetTrigger>
 
-      <SheetContent side="left" className="w-72 border-r border-slate-800 bg-[#070a12] p-0 text-slate-200">
+      <SheetContent side="left" className="w-[min(18rem,calc(100vw-1rem))] max-w-[calc(100vw-1rem)] overflow-y-auto border-r border-slate-800 bg-[#070a12] p-0 text-slate-200">
         <SheetHeader className="border-b border-slate-800 px-5 py-4">
           <SheetTitle>
             <Link href="/dashboard" className="flex items-center gap-3">

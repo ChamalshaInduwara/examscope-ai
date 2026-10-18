@@ -44,7 +44,7 @@ export default async function ProfilePage() {
   return (
     <div className="mx-auto max-w-4xl space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
           Profile
         </h1>
 
@@ -55,13 +55,13 @@ export default async function ProfilePage() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-4">
-            <div className="flex size-16 items-center justify-center rounded-full bg-primary text-xl font-semibold text-primary-foreground">
+          <div className="flex min-w-0 items-center gap-4">
+            <div className="flex size-16 shrink-0 items-center justify-center rounded-full bg-primary text-xl font-semibold text-primary-foreground">
               {initials || "ST"}
             </div>
 
-            <div>
-              <CardTitle>{user.name}</CardTitle>
+            <div className="min-w-0">
+              <CardTitle className="break-words">{user.name}</CardTitle>
 
               <CardDescription>
                 ExamScope AI Student
@@ -78,7 +78,7 @@ export default async function ProfilePage() {
                 Full name
               </div>
 
-              <p className="mt-2 font-medium">
+              <p className="mt-2 break-words font-medium">
                 {user.name}
               </p>
             </div>
@@ -89,7 +89,7 @@ export default async function ProfilePage() {
                 Email address
               </div>
 
-              <p className="mt-2 font-medium">
+              <p className="mt-2 break-words font-medium">
                 {user.email}
               </p>
             </div>

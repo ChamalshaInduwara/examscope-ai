@@ -70,17 +70,17 @@ export default async function SubjectPage({ params }: SubjectPageProps) {
           Back to Subjects
         </Button>
 
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-3 sm:gap-4">
           <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
             <BookOpen className="size-6" />
           </div>
 
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">
+          <div className="min-w-0">
+            <h1 className="break-words text-2xl font-bold tracking-tight sm:text-3xl">
               {subject.name}
             </h1>
 
-            <p className="mt-1 text-muted-foreground">
+            <p className="mt-1 break-words text-muted-foreground">
               {subject.code || "No subject code"}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">

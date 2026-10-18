@@ -84,12 +84,12 @@ export default async function SubjectsPage() {
               >
                 <Card className="h-full border border-border/80 transition-all duration-300 group-hover:-translate-y-1.5 group-hover:border-[#0466c8]/50 group-hover:shadow-[0_12px_28px_-8px_rgba(4,102,200,0.2)]">
                   <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <CardTitle className="text-lg font-bold group-hover:text-[#0466c8] transition-colors">
+                    <div className="flex min-w-0 items-start justify-between gap-2">
+                      <CardTitle className="min-w-0 break-words text-lg font-bold transition-colors group-hover:text-[#0466c8]">
                         {subject.name}
                       </CardTitle>
                       {subject.code && (
-                        <span className="rounded-md bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground">
+                        <span className="shrink-0 rounded-md bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground">
                           {subject.code}
                         </span>
                       )}

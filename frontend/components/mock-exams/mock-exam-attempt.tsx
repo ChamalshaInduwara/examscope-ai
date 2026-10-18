@@ -259,15 +259,15 @@ export function MockExamAttempt({
 
   return (
     <div className="space-y-6">
-      <div className="sticky top-4 z-10 flex items-center justify-between rounded-lg border bg-background p-4 shadow-sm">
-        <div>
+      <div className="sticky top-4 z-10 flex flex-col items-start gap-3 rounded-lg border bg-background p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <p className="text-sm font-medium">Exam in progress</p>
           <p className="text-xs text-muted-foreground">
             Answer all questions before submitting.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-lg font-semibold">
+        <div className="flex shrink-0 items-center gap-2 text-lg font-semibold">
           <Clock3 className="size-5" />
           {formattedTime}
         </div>
@@ -284,7 +284,7 @@ export function MockExamAttempt({
             : [];
 
           return (
-            <div key={examQuestion.id} className="rounded-lg border p-5">
+            <div key={examQuestion.id} className="rounded-lg border p-4 sm:p-5">
               <div className="flex flex-wrap justify-between gap-3">
                 <p className="text-sm text-muted-foreground">
                   Question {examQuestion.position}
@@ -294,7 +294,7 @@ export function MockExamAttempt({
                 </span>
               </div>
 
-              <p className="mt-3 font-medium leading-7">
+              <p className="mt-3 break-words font-medium leading-7">
                 {question.questionText}
               </p>
 
@@ -302,10 +302,11 @@ export function MockExamAttempt({
                 {options.map((option) => (
                   <label
                     key={option.label}
-                    className="flex cursor-pointer gap-3 rounded-md border p-3"
+                    className="flex cursor-pointer items-start gap-3 rounded-md border p-3"
                   >
                     <input
                       type="radio"
+                      className="mt-1 shrink-0"
                       name={question.id}
                       value={option.label}
                       checked={answers[question.id] === option.label}
@@ -314,8 +315,8 @@ export function MockExamAttempt({
                         setTextAnswer(question.id, option.label)
                       }
                     />
-                    <span className="font-semibold">{option.label}.</span>
-                    <span>{option.text}</span>
+                    <span className="shrink-0 font-semibold">{option.label}.</span>
+                    <span className="min-w-0 break-words">{option.text}</span>
                   </label>
                 ))}
               </div>
@@ -329,7 +330,7 @@ export function MockExamAttempt({
             : [];
 
           return (
-            <div key={examQuestion.id} className="rounded-lg border p-5">
+            <div key={examQuestion.id} className="rounded-lg border p-4 sm:p-5">
               <div className="flex flex-wrap justify-between gap-3">
                 <p className="text-sm text-muted-foreground">
                   Question {examQuestion.position}
@@ -339,14 +340,14 @@ export function MockExamAttempt({
                 </span>
               </div>
 
-              <p className="mt-3 font-medium leading-7">
+              <p className="mt-3 break-words font-medium leading-7">
                 {question.questionText}
               </p>
 
               <div className="mt-4 space-y-4">
                 {parts.map((part) => (
                   <div key={part.label} className="space-y-2">
-                    <p className="text-sm font-medium">
+                    <p className="break-words text-sm font-medium">
                       {part.label} {part.question_text} ({part.marks} marks)
                     </p>
                     <textarea
@@ -377,7 +378,7 @@ export function MockExamAttempt({
         }
 
         return (
-          <div key={examQuestion.id} className="rounded-lg border p-5">
+          <div key={examQuestion.id} className="rounded-lg border p-4 sm:p-5">
             <div className="flex flex-wrap justify-between gap-3">
               <p className="text-sm text-muted-foreground">
                 Question {examQuestion.position}
@@ -387,7 +388,7 @@ export function MockExamAttempt({
               </span>
             </div>
 
-            <p className="mt-3 font-medium leading-7">
+            <p className="mt-3 break-words font-medium leading-7">
               {question.questionText}
             </p>
 

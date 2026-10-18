@@ -37,8 +37,7 @@ export function Footer() {
             </p>
           </div>
 
-          {/* Links grid on mobile: 3 columns side by side */}
-          <div className="grid grid-cols-3 gap-6 sm:col-span-2 sm:grid-cols-3 md:col-span-3 md:gap-8">
+          <div className="grid grid-cols-2 gap-6 sm:col-span-2 sm:grid-cols-3 md:col-span-3 md:gap-8">
             {/* Product Links */}
             <div className="space-y-3">
               <p className="text-xs font-bold uppercase tracking-wider text-white">Platform</p>
