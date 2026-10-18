@@ -50,7 +50,7 @@ export function TestimonialsAndFaq() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   return (
-    <section id="faq" className="relative w-full bg-[#05070c] py-24">
+    <section id="faq" className="relative w-full bg-[#05070c] py-16 sm:py-24">
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Testimonials */}
         <div className="mx-auto max-w-3xl text-center">
@@ -61,12 +61,12 @@ export function TestimonialsAndFaq() {
             </span>
           </div>
 
-          <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+          <h2 className="mt-4 text-2xl font-extrabold tracking-tight text-white sm:text-4xl">
             Trusted By Top-Scoring Students
           </h2>
         </div>
 
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
+        <div className="mt-10 grid gap-5 sm:mt-12 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
           {TESTIMONIALS.map((t) => (
             <div
               key={t.name}

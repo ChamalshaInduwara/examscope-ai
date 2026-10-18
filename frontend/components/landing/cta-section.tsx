@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 
 export function CtaSection() {
   return (
-    <section className="relative w-full overflow-hidden bg-[#05070c] py-28">
+    <section className="relative w-full overflow-hidden bg-[#05070c] py-16 sm:py-24 lg:py-28">
       {/* Background with Ambient Glow Cones */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -18,7 +18,7 @@ export function CtaSection() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,180,216,0.22),transparent_70%)]" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 text-center">
+      <div className="relative z-10 mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
         {/* Glowing Logo */}
         <div className="relative mx-auto mb-6 flex size-20 items-center justify-center">
           <div className="absolute inset-0 rounded-full bg-[#00b4d8]/30 blur-xl animate-pulse" />
@@ -31,7 +31,7 @@ export function CtaSection() {
           />
         </div>
 
-        <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
+        <h2 className="text-2xl font-extrabold tracking-tight text-white sm:text-4xl md:text-5xl lg:text-6xl">
           Ready To Stop Cramming{" "}
           <span className="bg-gradient-to-r from-[#38bdf8] via-[#00b4d8] to-[#0466c8] bg-clip-text text-transparent">
             In The Dark?
@@ -43,19 +43,19 @@ export function CtaSection() {
           topics, generate practice exams, and achieve top grades with evidence-grounded revision.
         </p>
 
-        <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Link href="/register">
-            <Button className="h-13 rounded-xl bg-gradient-to-r from-[#00b4d8] via-[#0466c8] to-[#023e7d] px-9 text-base font-bold text-white shadow-[0_0_30px_rgba(0,180,216,0.5)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_45px_rgba(56,189,248,0.7)]">
-              <Sparkles className="mr-2 size-5 text-[#7dd3fc]" />
+        <div className="mt-6 flex flex-col items-stretch justify-center gap-3 sm:mt-8 sm:flex-row sm:items-center sm:gap-4">
+          <Link href="/register" className="w-full sm:w-auto">
+            <Button className="h-12 w-full rounded-xl bg-gradient-to-r from-[#00b4d8] via-[#0466c8] to-[#023e7d] px-7 text-sm font-bold text-white shadow-[0_0_30px_rgba(0,180,216,0.5)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_45px_rgba(56,189,248,0.7)] sm:h-13 sm:w-auto sm:px-9 sm:text-base">
+              <Sparkles className="mr-2 size-4 text-[#7dd3fc] sm:size-5" />
               Start Studying Free Now
-              <ArrowRight className="ml-2 size-5" />
+              <ArrowRight className="ml-2 size-4 sm:size-5" />
             </Button>
           </Link>
 
-          <Link href="/login">
+          <Link href="/login" className="w-full sm:w-auto">
             <Button
               variant="outline"
-              className="h-13 rounded-xl border-white/20 bg-white/5 px-8 text-base font-semibold text-white backdrop-blur-md hover:border-[#38bdf8]/50 hover:bg-[#00b4d8]/10 hover:text-[#38bdf8]"
+              className="h-12 w-full rounded-xl border-white/20 bg-white/5 px-7 text-sm font-semibold text-white backdrop-blur-md hover:border-[#38bdf8]/50 hover:bg-[#00b4d8]/10 hover:text-[#38bdf8] sm:h-13 sm:w-auto sm:px-8 sm:text-base"
             >
               Sign In To Account
             </Button>

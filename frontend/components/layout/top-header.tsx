@@ -67,16 +67,16 @@ export function TopHeader({
           <span className="absolute top-2 right-2 size-2 rounded-full bg-[#0466c8] shadow-[0_0_6px_#0466c8]" />
         </Button>
 
-        <div className="flex items-center gap-3 rounded-full border border-border/60 bg-muted/30 py-1 pl-1 pr-3 transition-colors hover:border-[#0466c8]/30">
+        <div className="flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/30 py-1 pl-1 pr-2 transition-colors hover:border-[#0466c8]/30 sm:gap-3 sm:pr-3">
           <Avatar className="size-7.5 ring-2 ring-[#0466c8]/30 transition-all hover:ring-[#0466c8]">
             <AvatarFallback className="bg-gradient-to-br from-[#0466c8] to-[#023e7d] text-[11px] font-bold text-white">
               {initials || "ST"}
             </AvatarFallback>
           </Avatar>
 
-          <div className="hidden text-left md:block">
+          <div className="hidden text-left sm:block md:block">
             <p className="text-xs font-semibold leading-tight text-foreground">{name}</p>
-            <p className="text-[10px] text-muted-foreground truncate max-w-[140px]">
+            <p className="text-[10px] text-muted-foreground truncate max-w-[100px] md:max-w-[140px]">
               {email}
             </p>
           </div>

@@ -15,7 +15,7 @@ export function Navbar({ isLoggedIn = false }: NavbarProps) {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/[0.08] bg-[#05070c]/80 backdrop-blur-xl transition-all">
-      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 md:h-20 lg:px-8">
         {/* Brand Logo */}
         <Link href="/" className="group flex items-center gap-3">
           <div className="relative flex size-11 shrink-0 items-center justify-center transition-all duration-300 group-hover:scale-105">
@@ -32,14 +32,14 @@ export function Navbar({ isLoggedIn = false }: NavbarProps) {
 
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5">
-              <span className="text-xl font-bold tracking-tight text-white group-hover:text-[#38bdf8] transition-colors">
+              <span className="text-lg font-bold tracking-tight text-white group-hover:text-[#38bdf8] transition-colors sm:text-xl">
                 ExamScope
               </span>
               <span className="rounded bg-gradient-to-r from-[#00b4d8] to-[#0466c8] px-1.5 py-0.5 text-[9px] font-extrabold tracking-wider text-white uppercase shadow-[0_0_10px_rgba(4,102,200,0.5)]">
                 AI
               </span>
             </div>
-            <span className="text-[10px] font-medium tracking-wide text-slate-400">
+            <span className="hidden text-[10px] font-medium tracking-wide text-slate-400 sm:block">
               Exam Intelligence Engine
             </span>
           </div>

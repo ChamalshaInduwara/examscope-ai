@@ -55,7 +55,7 @@ const FEATURES = [
 
 export function FeaturesGrid() {
   return (
-    <section id="features" className="relative w-full bg-[#05070c] py-24">
+    <section id="features" className="relative w-full bg-[#05070c] py-16 sm:py-24">
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Section Heading */}
         <div className="mx-auto max-w-3xl text-center">
@@ -66,7 +66,7 @@ export function FeaturesGrid() {
             </span>
           </div>
 
-          <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">
+          <h2 className="mt-4 text-2xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">
             Everything You Need To{" "}
             <span className="bg-gradient-to-r from-[#38bdf8] via-[#00b4d8] to-[#0466c8] bg-clip-text text-transparent">
               Outperform Your Class
@@ -79,7 +79,7 @@ export function FeaturesGrid() {
         </div>
 
         {/* Feature Cards Grid */}
-        <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-12 grid gap-4 sm:grid-cols-2 sm:mt-16 sm:gap-6 lg:grid-cols-3">
           {FEATURES.map((item) => {
             const Icon = item.icon;
             return (

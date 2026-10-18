@@ -29,7 +29,7 @@ export default async function SubjectsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Subjects</h1>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Subjects</h1>
 
         <p className="mt-2 text-muted-foreground">
           Create and manage the subjects you want to study with ExamScope AI.

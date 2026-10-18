@@ -111,7 +111,7 @@ export default async function UploadsPage({ searchParams }: UploadsPageProps) {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Upload Center</h1>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Upload Center</h1>
 
         <p className="mt-2 text-muted-foreground">
           Upload past papers, lecture notes and other study materials for
@@ -220,7 +220,7 @@ export default async function UploadsPage({ searchParams }: UploadsPageProps) {
                     </div>
                   </div>
 
-                  <div className="flex shrink-0 flex-wrap items-center gap-2">
+                  <div className="flex shrink-0 flex-wrap items-center gap-2 sm:flex-nowrap">
                     <DocumentStatusBadge status={document.processingStatus} />
 
                     {document.processingStatus !== "PROCESSING" ? (
